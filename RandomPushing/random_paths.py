@@ -61,11 +61,11 @@ def push_problem(C, mutli_waypoints):
 
     return komo
 
-def compute_motion(C, verbose):
+def compute_motion(C, multi_waypoints, verbose):
     '''solves the pushProblem'''
 
     #-- define a motion problem
-    komo = push_problem(C)
+    komo = push_problem(C, multi_waypoints)
     print('this is the defined motion problem: ', komo.reportProblem())
     #komo.view(verbose>0, 'this is the path configuration (two overlaying configurations, waypoints included)')
 
@@ -73,9 +73,6 @@ def compute_motion(C, verbose):
     ret = ry.NLP_Solver().setProblem(komo.nlp()).setOptions( stopTolerance=1e-2, verbose=4 ).solve()
     print(ret)
     print('RET TYPE:',type(ret))
-    key = komo.view(verbose>0, 'happy with the motion?')
-    if verbose>0 and chr(key)=='q':
-        exit()
 
     komo.view_close()
     

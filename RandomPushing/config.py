@@ -1,6 +1,6 @@
 from robotic import ry
 
-def setup_config(waypoints=None):
+def setup_config(waypoints=None, obj_pos=[-.50, .1, .69]):
     '''creates a config to work with'''
 
     C = ry.Config()
@@ -12,18 +12,23 @@ def setup_config(waypoints=None):
     f.addAttributes({'focalLength':0.895, 'width':640., 'height':360.})
 
     C.addFrame('obj') \
-        .setPosition([-.50, .1, .69]) \
+        .setPosition(obj_pos) \
         .setShape(ry.ST.cylinder, size=[.08, .06]) \
         .setColor([1, .5, 0]) .setMass(.1) .setContact(True)
     
+    C.addFrame('predicted_obj') \
+        .setPosition(obj_pos) \
+        .setShape(ry.ST.marker, size=[.1]) \
+        .setColor([0, 1, 0])
+    
     if waypoints:
         for i in range(waypoints):
-            way = C.addFrame(f'way{i}', "obj")
+            way = C.addFrame(f'way{i}', "predicted_obj")
             way.setShape(ry.ST.marker, size=[.1])
     else:
-        way0 = C.addFrame('start_point', "obj")
+        way0 = C.addFrame('start_point', "predicted_obj")
         way0.setShape(ry.ST.marker, size=[.1])
-        way1 = C.addFrame('end_point', "obj")
+        way1 = C.addFrame('end_point', "predicted_obj")
         way1.setShape(ry.ST.marker, size=[.1])
     return C
 
