@@ -22,6 +22,9 @@ def setup_config(waypoints=None, obj_pos=[-.50, .1, .69]):
         .setColor([0, 1, 0])
     
     if waypoints:
+        way = C.addFrame('wayStart', "predicted_obj")
+        way.setShape(ry.ST.marker, size=[.1])
+
         for i in range(waypoints):
             way = C.addFrame(f'way{i}', "predicted_obj")
             way.setShape(ry.ST.marker, size=[.1])

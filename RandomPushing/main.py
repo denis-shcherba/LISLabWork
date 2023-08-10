@@ -5,7 +5,7 @@ from config import setup_config, startup_robot
 from random_paths import generate_waypoints, compute_motion, run_waypoints_one_by_one
 from bird_search import flyToPoint, getBirdView
 
-WAYPOINTS = 16
+WAYPOINTS = 6
 INITIAL_OBJ_POS = [-.50, .1, .69]
 DEBUG = True
 OBJ_HEIGHT = .08
@@ -31,6 +31,7 @@ if __name__ == "__main__":
     obj_pos = INITIAL_OBJ_POS
 
     for i in range(5):
+        bot.home(C)
 
         flyToPoint([obj_pos[0], obj_pos[1]], C, bot)
         obj_pos, dist = getBirdView(bot, C, debug=DEBUG)
@@ -43,6 +44,8 @@ if __name__ == "__main__":
 
         #-- compute a motion (debug this inside the method)
         start, end = generate_waypoints(C, WAYPOINTS)
+        start = [s + obj_pos[i] for i, s in enumerate(start)]
+        end = [e + obj_pos[i] for i, e in enumerate(end)]
         path, feasible = compute_motion(C, WAYPOINTS, verbose)
         print('returned path shape: ', type(path), path.shape)
 
@@ -56,18 +59,17 @@ if __name__ == "__main__":
             # send the path by individually sending waypoints 
             run_waypoints_one_by_one(bot, path, True, C)
 
-            # shutdown things
-            bot.home(C)
-
             d["way_pos"]["start"] = start
             d["way_pos"]["end"] = end
-            objp = C.getFrame("obj").getPosition()
-            d["obj_pos"]["end"] = obj_pos
+            # d["obj_pos"]["end"] = obj_pos
             data.append(d)
 
-        else: non_f += 1
-        obj_pos = end
+            obj_pos = end
 
+        else:
+            non_f += 1
+
+    bot.home(C)
     with open('data.json', 'w') as f:
         json.dump(data, f)
 

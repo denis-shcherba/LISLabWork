@@ -75,11 +75,11 @@ def getBirdView(bot, ry_config, debug=False):
     fx, fy = fxypxy[0], fxypxy[1]
     px, py = fxypxy[2], fxypxy[3]
 
-    Z = depth[np.round(cx),np.round(cy)]
+    Z = depth[np.round(cy),np.round(cx)]
     cx = Z * (cx - px) / fx
     cy = -Z * (cy - py) / fy
 
-    point3x = [cx, cy, -Z]
+    point3x = [cx, cy, -Z-.04]
     point3x = R@point3x + t
 
     return point3x, distance_to_center

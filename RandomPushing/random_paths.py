@@ -5,11 +5,11 @@ def segment_line(point1, point2, point_between):
     return [point1 + (point2 - point1) * 0.5 * (1-np.cos(np.pi * i/(point_between-1))) for i in range(point_between)]
 
 def generate_waypoints(C, mutli_waypoints):
-    r = .15
+    r = .05
     phi = np.random.random()*np.pi*2
 
     point0 = np.array([np.cos(phi), np.sin(phi), 0]) * r
-    point1 = point0 * -2
+    point1 = point0 * -(.08+(r*2))
 
     x_vec = point1 - point0
     unitz = np.array([0,0,1])
@@ -26,9 +26,13 @@ def generate_waypoints(C, mutli_waypoints):
 
     if mutli_waypoints:
         points = segment_line(point0, point1, mutli_waypoints)
+    
+        way = C.getFrame('wayStart')
+        way.setRelativePose(f't({points[0][0]} {points[0][1]} {points[0][2]+.07}) r({gripper_angle} 0 0 1) d(-45 1 0 0)')
         for i, p in enumerate(points):
             way = C.getFrame(f'way{i}')
             way.setRelativePose(f't({p[0]} {p[1]} {p[2]}) r({gripper_angle} 0 0 1) d(-45 1 0 0)')
+
     else:
         way0 = C.getFrame('start_point')
         # t: position relative to cylinder , d: degrees arm rotation, d:degrees gripper rotation
@@ -37,7 +41,7 @@ def generate_waypoints(C, mutli_waypoints):
         way1 = C.getFrame('end_point')
         way1.setRelativePose(f't({point1[0]} {point1[1]} {point1[2]}) r({gripper_angle} 0 0 1) d(-45 1 0 0)')
     
-    return point0.tolist(), point1.tolist()
+    return [p for p in point0], [p for p in point1]
 
 
 def push_problem(C, mutli_waypoints):
@@ -46,15 +50,16 @@ def push_problem(C, mutli_waypoints):
     # define a 2 waypoint problem in KOMO
     komo = ry.KOMO()
     komo.setConfig(C, True)
-    if mutli_waypoints: komo.setTiming(mutli_waypoints, 1, 1., 2)
+    if mutli_waypoints: komo.setTiming(mutli_waypoints+1, 1, 1., 2)
     else: komo.setTiming(2., 1, 1., 0)
 
     #komo.addObjective([], ry.FS.accumulatedCollisions, [], ry.OT.eq)
     komo.addObjective([], ry.FS.jointLimits, [], ry.OT.ineq)
 
     if mutli_waypoints:
+        komo.addObjective([1], ry.FS.poseDiff, ['l_gripper', 'wayStart'], ry.OT.eq, [1e1])
         for i in range(mutli_waypoints):
-            komo.addObjective([i+1], ry.FS.poseDiff, ['l_gripper', f'way{i}'], ry.OT.eq, [1e1])
+            komo.addObjective([i+2], ry.FS.poseDiff, ['l_gripper', f'way{i}'], ry.OT.eq, [1e1])
     else:
         komo.addObjective([1.], ry.FS.poseDiff, ['l_gripper', 'start_point'], ry.OT.eq, [1e1])
         komo.addObjective([2.], ry.FS.poseDiff, ['l_gripper', 'end_point'], ry.OT.eq, [1e1])
