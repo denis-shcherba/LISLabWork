@@ -5,7 +5,7 @@ def segment_line(point1, point2, point_between):
     return [point1 + (point2 - point1) * 0.5 * (1-np.cos(np.pi * i/(point_between-1))) for i in range(point_between)]
 
 def generate_waypoints(C, mutli_waypoints):
-    r = .05
+    r = .15
     phi = np.random.random()*np.pi*2
 
     point0 = np.array([np.cos(phi), np.sin(phi), 0]) * r

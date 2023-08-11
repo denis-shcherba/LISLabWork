@@ -16,7 +16,7 @@ def flyToPoint(point, C, bot):
     #z Vector of l_gripper equal to fxypxy = bot.getCameraFxypxy("camera")(0,0,1) pointing downward, punishment 0.5 if not
     komo.addObjective([], ry.FS.vectorZ, ["l_gripper"], ry.OT.eq, [0.5], [0, 0, 1])
     #align positions with right bird psitions
-    komo.addObjective([1.], ry.FS.position, ["l_gripper"], ry.OT.eq, [1e1], [point[0], point[1], 1.2])
+    komo.addObjective([1.], ry.FS.position, ["l_gripper"], ry.OT.eq, [1e1], [point[0], point[1], 1])
 
     ret = ry.NLP_Solver() \
         .setProblem(komo.nlp()) \
