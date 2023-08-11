@@ -53,7 +53,7 @@ def push_problem(C, mutli_waypoints):
     if mutli_waypoints: komo.setTiming(mutli_waypoints+1, 1, 1., 2)
     else: komo.setTiming(2., 1, 1., 0)
 
-    #komo.addObjective([], ry.FS.accumulatedCollisions, [], ry.OT.eq)
+    komo.addObjective([], ry.FS.accumulatedCollisions, [], ry.OT.eq)
     komo.addObjective([], ry.FS.jointLimits, [], ry.OT.ineq)
 
     if mutli_waypoints:
@@ -102,3 +102,4 @@ def run_waypoints_one_by_one(bot, path, wait, C):
             # print(chr(key))
             if chr(key)=='q':
                 return
+            

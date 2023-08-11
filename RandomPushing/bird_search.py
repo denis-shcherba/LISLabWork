@@ -81,5 +81,6 @@ def getBirdView(bot, ry_config, debug=False):
 
     point3x = [cx, cy, -Z-.04]
     point3x = R@point3x + t
+    point3xl = [p for p in point3x]
 
-    return point3x, distance_to_center
+    return point3xl, distance_to_center

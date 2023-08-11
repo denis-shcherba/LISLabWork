@@ -1,6 +1,6 @@
 from robotic import ry
 import json
-
+import numpy as np
 from config import setup_config, startup_robot
 from random_paths import generate_waypoints, compute_motion, run_waypoints_one_by_one
 from bird_search import flyToPoint, getBirdView
@@ -30,45 +30,51 @@ if __name__ == "__main__":
 
     obj_pos = INITIAL_OBJ_POS
 
-    for i in range(5):
-        bot.home(C)
-
-        flyToPoint([obj_pos[0], obj_pos[1]], C, bot)
-        obj_pos, dist = getBirdView(bot, C, debug=DEBUG)
-        if not dist: break
+    flyToPoint([obj_pos[0], obj_pos[1]], C, bot)
+    obj_pos, dist = getBirdView(bot, C, debug=DEBUG)
+    if dist != None: 
+        
         while dist > 20:
             flyToPoint([obj_pos[0], obj_pos[1]], C, bot)
             obj_pos, dist = getBirdView(bot, C, debug=DEBUG)
 
-        if dist:
-            C.getFrame("predicted_obj").setPosition(obj_pos + OBJ_HEIGHT*.5)
+        for i in range(1):
+            bot.home(C)
 
-            #-- compute a motion (debug this inside the method)
-            start, end = generate_waypoints(C, WAYPOINTS)
-            start = [s + obj_pos[i] for i, s in enumerate(start)]
-            end = [e + obj_pos[i] for i, e in enumerate(end)]
-            path, feasible = compute_motion(C, WAYPOINTS, verbose)
-            print('returned path shape: ', type(path), path.shape)
+            if dist:
+                C.getFrame("predicted_obj").setPosition(np.array(obj_pos) + OBJ_HEIGHT*.5)
 
-            #-- now, if we're happy with the motion, send it to the robot
-            if feasible:
-                d = {}
-                d["way_pos"] = {}
-                d["obj_pos"] = {}
-                d["obj_pos"]["start"] = obj_pos
-                d["way_pos"]["start"] = start
+                #-- compute a motion (debug this inside the method)
+                way_start, way_end = generate_waypoints(C, WAYPOINTS)
+                path, feasible = compute_motion(C, WAYPOINTS, verbose)
+                print('returned path shape: ', type(path), path.shape)
 
-                # send the path by individually sending waypoints 
-                run_waypoints_one_by_one(bot, path, True, C)
+                #-- now, if we're happy with the motion, send it to the robot
+                if feasible:
+                    d = {}
+                    d["way_pos"] = {}
+                    d["obj_pos"] = {}
+                    d["obj_pos"]["start"] = obj_pos
+                    d["way_pos"]["start"] = way_start
 
-                d["way_pos"]["end"] = end
+                    # send the path by individually sending waypoints 
+                    run_waypoints_one_by_one(bot, path, True, C)
+
+                else:
+                    non_f += 1
+                    continue
+
+                flyToPoint([obj_pos[0], obj_pos[1]], C, bot)
+                obj_pos, dist = getBirdView(bot, C, debug=DEBUG)
+                if dist == None: break
+                while dist > 20:
+                    flyToPoint([obj_pos[0], obj_pos[1]], C, bot)
+                    obj_pos, dist = getBirdView(bot, C, debug=DEBUG)
+                
+                d["way_pos"]["end"] = way_end
                 d["obj_pos"]["end"] = obj_pos
                 data.append(d)
-
-                obj_pos = end
-
-            else:
-                non_f += 1
+                
 
     bot.home(C)
     with open('data.json', 'w') as f:
