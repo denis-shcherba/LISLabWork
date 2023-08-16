@@ -5,6 +5,7 @@ from config import setup_config, startup_robot
 from random_paths import generate_waypoints, compute_motion, run_waypoints_one_by_one
 from bird_search import flyToPoint, getBirdView
 from visual import getObject
+from time import sleep
 
 WAYPOINTS = 6
 INITIAL_OBJ_POS = [-.50, .1, .69]
@@ -43,6 +44,8 @@ if __name__ == "__main__":
     bot.moveTo(komo.getPath()[0], 1., False)
     while bot.getTimeToEnd() > 0:
         bot.sync(C, .1)
+
+    sleep(3)
 
     getObject(bot, C)
 

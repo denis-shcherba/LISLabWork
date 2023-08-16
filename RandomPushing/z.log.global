@@ -1,5 +1,5 @@
 ** compiled at:     Jul 16 2023 09:43:23
-** execution start: 2023-08-16 14:07:45:944956
+** execution start: 2023-08-16 15:55:36:148948
 graph.cpp:initParameters:1398(3) opening config file 'rai.cfg'
 graph.cpp:initParameters:1403(3)  - success
 graph.cpp:initParameters:1411(3) opening base config file '/root/local/rai/../local.cfg'
@@ -84,6 +84,7 @@ util.ipp:getParameterBase:36(3)      bot/raiseWindow:     0 # default [b]
 util.ipp:getParameterBase:36(3)      bot/raiseWindow:     0 # default [b]
 util.ipp:getParameterBase:36(3)      bot/raiseWindow:     0 # default [b]
 util.ipp:getParameterBase:36(3)      bot/raiseWindow:     0 # default [b]
+util.ipp:getParameterBase:36(3)      bot/raiseWindow:     0 # default [b]
 util.ipp:getParameterBase:36(3)         KOMO/verbose:     1 # default [i]
 util.ipp:getParameterBase:36(3) KOMO/animateOptimization:     0 # default [i]
 util.ipp:getParameterBase:36(3)     KOMO/mimicStable:     1 # default [b]
@@ -140,9 +141,10 @@ util.ipp:getParameterBase:36(3)      bot/raiseWindow:     0 # default [b]
 util.ipp:getParameterBase:36(3)      bot/raiseWindow:     0 # default [b]
 util.ipp:getParameterBase:36(3)      bot/raiseWindow:     0 # default [b]
 util.ipp:getParameterBase:36(3)      bot/raiseWindow:     0 # default [b]
+util.ipp:getParameterBase:36(3)      bot/raiseWindow:     0 # default [b]
 bot.cpp:~BotOp:106(0) shutting down BotOp...
 simulation.cpp:~BotThreadedSim:56(0) shutting down SimThread
 simulation.cpp:~Simulation:157(0) shutting down Simulation
-** execution stop: 2023-08-16 14:08:17:264392
-** real time: 31.3195sec
-** CPU time: 12.4293
+** execution stop: 2023-08-16 15:56:41:345917
+** real time: 65.197sec
+** CPU time: 33.5235
