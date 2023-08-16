@@ -4,19 +4,22 @@ import cv2
 import numpy as np
 
 
-#fly to point with aligned x,y coords
-def flyToPoint(point, C, bot):
-    
-    komo = ry.KOMO()
-    komo.setConfig(C, True)
-    komo.setTiming(1., 1, 1., 0)
+def flyToPoint(point, ry_config, bot, height=1):
 
-    # komo.addObjective([], ry.FS.accumulatedCollisions, [], ry.OT.eq)
-    # komo.addObjective([], ry.FS.jointLimits, [], ry.OT.ineq)
-    #z Vector of l_gripper equal to fxypxy = bot.getCameraFxypxy("camera")(0,0,1) pointing downward, punishment 0.5 if not
+    """
+    Point is represented as 2d coordinates
+    The gripper will be positioned over said 2d point at a set z height
+    """
+
+    komo = ry.KOMO()
+    komo.setConfig(ry_config, True)
+    komo.setTiming(1., 1, 1., 0)
+    komo.addObjective([], ry.FS.accumulatedCollisions, [], ry.OT.eq)
+    komo.addObjective([], ry.FS.jointLimits, [], ry.OT.ineq)
+
+    # Robot gripper has to be looking down
     komo.addObjective([], ry.FS.vectorZ, ["l_gripper"], ry.OT.eq, [0.5], [0, 0, 1])
-    #align positions with right bird psitions
-    komo.addObjective([1.], ry.FS.position, ["l_gripper"], ry.OT.eq, [1e1], [point[0], point[1], 1])
+    komo.addObjective([1.], ry.FS.position, ["l_gripper"], ry.OT.eq, [1e1], [point[0], point[1], height])
 
     ret = ry.NLP_Solver() \
         .setProblem(komo.nlp()) \
@@ -27,10 +30,14 @@ def flyToPoint(point, C, bot):
         
     bot.moveTo(komo.getPath()[0], 1., False)
     while bot.getTimeToEnd() > 0:
-        bot.sync(C, .1)
+        bot.sync(ry_config, .1)
 
-#returning centerpoint
 def getBirdView(bot, ry_config, debug=False):
+
+    """
+    Gets centerpoint of any orange object the robot camera sees
+    """
+    
     rgb, depth = bot.getImageAndDepth('camera')
 
     hsv = cv2.cvtColor(rgb, cv2.COLOR_RGB2HSV)

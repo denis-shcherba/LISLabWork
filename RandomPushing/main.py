@@ -7,7 +7,7 @@ from bird_search import flyToPoint, getBirdView
 
 WAYPOINTS = 6
 INITIAL_OBJ_POS = [-.50, .1, .69]
-DEBUG = False
+DEBUG = True
 OBJ_HEIGHT = .08
 
 if __name__ == "__main__":
@@ -38,7 +38,7 @@ if __name__ == "__main__":
             flyToPoint([obj_pos[0], obj_pos[1]], C, bot)
             obj_pos, dist = getBirdView(bot, C, debug=DEBUG)
 
-        for i in range(1):
+        for i in range(5):
             bot.home(C)
 
             if dist:
