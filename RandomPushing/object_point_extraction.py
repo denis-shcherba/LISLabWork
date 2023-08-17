@@ -45,8 +45,6 @@ if __name__ == "__main__":
     while bot.getTimeToEnd() > 0:
         bot.sync(C, .1)
 
-    sleep(3)
-
     getObject(bot, C)
 
     C.view(True)

@@ -4,6 +4,7 @@ import numpy as np
 from config import setup_config, startup_robot
 from random_paths import generate_waypoints, compute_motion, run_waypoints_one_by_one
 from bird_search import flyToPoint, getBirdView
+from visual import getObject, point2obj
 
 WAYPOINTS = 6
 INITIAL_OBJ_POS = [-.50, .1, .69]
@@ -30,13 +31,15 @@ if __name__ == "__main__":
 
     obj_pos = INITIAL_OBJ_POS
 
-    flyToPoint([obj_pos[0], obj_pos[1]], C, bot)
-    obj_pos, dist = getBirdView(bot, C, debug=DEBUG)
+    point2obj(bot, C, np.array(obj_pos))
+    # getObj returns middlepoint or objpos, but no dist atm
+    obj_pos  = getObject(bot, C) 
+    dist = np.linalg.norm(C.getFrame("camera").getPosition()-obj_pos)
     if dist != None: 
         
         while dist > 20:
-            flyToPoint([obj_pos[0], obj_pos[1]], C, bot)
-            obj_pos, dist = getBirdView(bot, C, debug=DEBUG)
+            point2obj(bot, C, np.array(obj_pos))
+            obj_pos, dist = getObject(bot, C)
 
         for i in range(5):
             bot.home(C)
@@ -64,12 +67,12 @@ if __name__ == "__main__":
                     non_f += 1
                     continue
 
-                flyToPoint([obj_pos[0], obj_pos[1]], C, bot)
-                obj_pos, dist = getBirdView(bot, C, debug=DEBUG)
+                point2obj(bot, C, np.array(obj_pos))
+                obj_pos, dist = getObject(bot, C)
                 if dist == None: break
                 while dist > 20:
-                    flyToPoint([obj_pos[0], obj_pos[1]], C, bot)
-                    obj_pos, dist = getBirdView(bot, C, debug=DEBUG)
+                    point2obj(bot, C, np.array(obj_pos))
+                    obj_pos, dist = getObject(bot, C)
                 
                 d["way_pos"]["end"] = way_end
                 d["obj_pos"]["end"] = obj_pos

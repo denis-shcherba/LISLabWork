@@ -5,6 +5,17 @@ import cv2
 
 
 def getObject(bot, ry_config):
+    """
+    Computes center of point cloud from real sense sensor. 
+
+    Args:
+        bot (roboter) : 
+        ry_config (environment config) :
+
+    Returns:
+        Cloud center or middle point (float list): [x, y, z].
+
+    """
     bot.sync(ry_config, .1)
     rgb, depth, points = bot.getImageDepthPcl('camera', False)
 
@@ -21,19 +32,27 @@ def getObject(bot, ry_config):
             objectpoints.append(p)
     points = objectpoints
 
-    print(points)
-    """middlepoint = [
-        sum([p[0] for p in points])/len(points),
-        sum([p[1] for p in points])/len(points),
-        sum([p[2] for p in points])/len(points)
-    ]"""
+    min_x = min([p[0] for p in points])
+    min_y = min([p[1] for p in points])
+    min_z = min([p[2] for p in points])
+    max_x = max([p[0] for p in points])
+    max_y = max([p[1] for p in points])
+    max_z = max([p[2] for p in points])
+
+    new_p = []
+    c = 0 
+    for p in points:
+        if p[0] == max_x or p[1] == max_y or p[2] == max_z:
+            c += 1
+        else:
+            new_p.append(p)
+
+    points = new_p
+
     array_stack = np.stack(points, axis=0)
 
 # Compute the mean array along axis 0
     middlepoint = np.mean(array_stack, axis=0)
-    
-    #middlepoint = np.mean(points)
-    print(middlepoint)
 
     hsv = cv2.cvtColor(rgb, cv2.COLOR_RGB2HSV)
     mask = cv2.inRange(hsv, (10, 100, 20), (25, 255, 255))
@@ -47,4 +66,30 @@ def getObject(bot, ry_config):
     ry_config.addFrame('mid_point') \
         .setPosition(middlepoint) \
         .setShape(ry.ST.marker, size=[.2]) \
-        .setColor([1, 0, 0])
+        .setColor([1, 1, 0]) # yellow
+    
+    return middlepoint
+
+def point2obj(bot, ry_config, objpos):
+    C = ry_config
+    komo = ry.KOMO()
+    komo.setConfig(C, True)
+    komo.setTiming(1., 1, 1., 0)
+    komo.addObjective([], ry.FS.accumulatedCollisions, [], ry.OT.eq)
+    komo.addObjective([], ry.FS.jointLimits, [], ry.OT.ineq)
+
+    # Robot gripper has to be looking down
+    # opos = C.getFrame("obj").getPosition()
+    gpos = C.getFrame("l_gripper").getPosition()
+    komo.addObjective([1.], ry.FS.vectorZ, ["l_gripper"], ry.OT.eq, [1e1], (objpos-gpos)*-1)
+
+    ret = ry.NLP_Solver() \
+        .setProblem(komo.nlp()) \
+        .setOptions(stopTolerance=1e-2, verbose=0) \
+        .solve()
+    
+    print(ret)
+        
+    bot.moveTo(komo.getPath()[0], 1., False)
+    while bot.getTimeToEnd() > 0:
+        bot.sync(C, .1)
