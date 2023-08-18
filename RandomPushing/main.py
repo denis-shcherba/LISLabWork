@@ -2,7 +2,7 @@ from robotic import ry
 import json
 import numpy as np
 from config import setup_config, startup_robot
-from random_paths import generate_waypoints, compute_motion, run_waypoints_one_by_one
+from random_paths import generate_waypointsv2, compute_motion, run_waypoints_one_by_one
 from bird_search import flyToPoint, getBirdView
 from visual import getObject, point2obj
 
@@ -48,7 +48,7 @@ if __name__ == "__main__":
                 C.getFrame("predicted_obj").setPosition(np.array(obj_pos) + OBJ_HEIGHT*.5)
 
                 #-- compute a motion (debug this inside the method)
-                way_start, way_end = generate_waypoints(C, WAYPOINTS)
+                way_start, way_end, _, _ = generate_waypointsv2(C, obj_pos, .3, waypoints=WAYPOINTS)
                 path, feasible = compute_motion(C, WAYPOINTS, verbose)
                 print('returned path shape: ', type(path), path.shape)
 

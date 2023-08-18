@@ -22,17 +22,18 @@ def setup_config(waypoints=None, obj_pos=[-.50, .1, .69]):
         .setColor([0, 1, 0])
     
     if waypoints:
-        way = C.addFrame('wayStart', "predicted_obj")
-        way.setShape(ry.ST.marker, size=[.1])
-
         for i in range(waypoints):
-            way = C.addFrame(f'way{i}', "predicted_obj")
-            way.setShape(ry.ST.marker, size=[.1])
+            way = C.addFrame(f'way{i}') \
+                .setShape(ry.ST.marker, size=[.1]) \
+                .setPosition([-.50, .1, .69])
     else:
-        way0 = C.addFrame('start_point', "predicted_obj")
-        way0.setShape(ry.ST.marker, size=[.1])
-        way1 = C.addFrame('end_point', "predicted_obj")
-        way1.setShape(ry.ST.marker, size=[.1])
+        way0 = C.addFrame('start_point') \
+            .setShape(ry.ST.marker, size=[.1]) \
+            .setPosition([-.50, .1, .69])
+        
+        way1 = C.addFrame('end_point') \
+            .setShape(ry.ST.marker, size=[.1]) \
+            .setPosition([-.50, .1, .69])
     return C
 
 def startup_robot(C):
