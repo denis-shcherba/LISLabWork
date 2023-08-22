@@ -119,10 +119,10 @@ def generate_waypoints(C, mutli_waypoints):
     return [p for p in point0], [p for p in point1]
 
 
-def push_problem(C, mutli_waypoints):
+def push_problem(C, mutli_waypoints, hand_direction):
     '''creates a motion problem using "waypoint engineering" approach: define waypoints and motion relative to these'''
 
-    # define a 2 waypoint problem in KOMO
+    # define a 2 waypoint problem in KOMO   
     komo = ry.KOMO()
     komo.setConfig(C, True)
     if mutli_waypoints: komo.setTiming(mutli_waypoints+1, 1, 1., 2)
@@ -133,9 +133,14 @@ def push_problem(C, mutli_waypoints):
 
     komo.addObjective([], ry.FS.accumulatedCollisions, [], ry.OT.eq)
     komo.addObjective([], ry.FS.jointLimits, [], ry.OT.ineq)
+    
+    
+    # komo.addObjective([], ry.FS.vectorZ, ['l_gripper'], ry.OT.eq, [1e1], hand_direction)
+
 
     if mutli_waypoints:
         #komo.addObjective([1], ry.FS.poseDiff, ['l_gripper', 'wayStart'], ry.OT.eq, [1e1])
+
         for i in range(mutli_waypoints):
             komo.addObjective([i+2], ry.FS.poseDiff, ['l_gripper', f'way{i}'], ry.OT.eq, [1e1])
     else:
@@ -144,11 +149,11 @@ def push_problem(C, mutli_waypoints):
 
     return komo
 
-def compute_motion(C, multi_waypoints, verbose):
+def compute_motion(C, multi_waypoints, hand_direction, verbose):
     '''solves the pushProblem'''
 
     #-- define a motion problem
-    komo = push_problem(C, multi_waypoints)
+    komo = push_problem(C, multi_waypoints, hand_direction)
     print('this is the defined motion problem: ', komo.reportProblem())
     #komo.view(verbose>0, 'this is the path configuration (two overlaying configurations, waypoints included)')
 
@@ -162,7 +167,8 @@ def compute_motion(C, multi_waypoints, verbose):
     return komo.getPath(), ret.feasible
 
 def run_waypoints_one_by_one(bot, path, wait, C):
-    '''run a list of waypoints on the bot (or sim)'''
+    '''run a list of waypoi        komo.addObjective([], ry.FS.vectorZ, ['l_gripper'], ry.OT.eq, [1e-5], hand_direction)
+nts on the bot (or sim)'''
 
     # add the path points by appending individual waypoints to the spline buffer (spline will have zero velocity at waypoints)
     bot.moveTo(path[0], 1., False)
