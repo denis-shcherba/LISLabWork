@@ -7,7 +7,7 @@ from visual import getObject, point2obj, plotArena
 
 WAYPOINTS = 6
 INITIAL_OBJ_POS = [-.50, .1, .69]
-DEBUG = True
+DEBUG = False
 OBJ_HEIGHT = .08
 
 INR = .3
@@ -21,10 +21,11 @@ if __name__ == "__main__":
 
     #-- define a configuration
     C = setup_config(WAYPOINTS, INITIAL_OBJ_POS)
-    key = C.view(verbose>0, 'happy with the config?')
-    print('key pressed: ', chr(key)) #use this for basic interaction, e.g. aborting the program
-    if chr(key)=='q':
-        exit()
+    if DEBUG:
+        key = C.view(verbose>0, 'happy with the config?')
+        print('key pressed: ', chr(key)) #use this for basic interaction, e.g. aborting the program
+        if chr(key)=='q':
+            exit()
 
     bot = startup_robot(C)
 
@@ -41,10 +42,12 @@ if __name__ == "__main__":
     if dist != None: 
 
         for i in range(5):
-            bot.home(C)
 
-           
-            C.getFrame("predicted_obj").setPosition(np.array(obj_pos) + OBJ_HEIGHT*.5)
+            if not obj_pos:
+                print("Can't find object!")
+                break
+
+            bot.home(C)
 
             #-- compute a motion (debug this inside the method)
             way_start, way_end, _, _ = generate_waypointsv2(C, obj_pos, .3, inner_rad=INR, outer_rad=OTR, waypoints=WAYPOINTS)

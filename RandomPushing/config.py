@@ -16,24 +16,19 @@ def setup_config(waypoints=None, obj_pos=[-.50, .1, .69]):
         .setShape(ry.ST.cylinder, size=[.08, .06]) \
         .setColor([1, .5, 0]) .setMass(.1) .setContact(True)
     
-    C.addFrame('predicted_obj') \
-        .setPosition(obj_pos) \
-        .setShape(ry.ST.marker, size=[.1]) \
-        .setColor([0, 1, 0])
-    
     if waypoints:
         for i in range(waypoints):
-            way = C.addFrame(f'way{i}') \
+            C.addFrame(f'way{i}') \
                 .setShape(ry.ST.sphere, size=[.01]) \
                 .setPosition([0, .0, .0]) \
                 .setColor([0, 0, 1])
     else:
-        way0 = C.addFrame('start_point') \
+        C.addFrame('start_point') \
             .setShape(ry.ST.sphere, size=[.01]) \
             .setPosition([0, .0, .0]) \
             .setColor([0, 0, 1])
         
-        way1 = C.addFrame('end_point') \
+        C.addFrame('end_point') \
             .setShape(ry.ST.sphere, size=[.01]) \
             .setPosition([0, .0, .0]) \
             .setColor([0, 0 , 1])

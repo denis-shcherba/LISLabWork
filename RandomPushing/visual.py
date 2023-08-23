@@ -36,22 +36,21 @@ def getObject(bot, ry_config):
             objectpoints.append(p)
     points = objectpoints
 
-    if not points: return [0, 0, 0]
+    if not points: return []
 
-    # Compute the mean array along axis 0
-    array_stack = np.stack(points, axis=0)
-    middlepoint = np.mean(array_stack, axis=0)
-    """
-    #middlepoint = np.power(np.prod(array_stack, axis=0), 1.0 / len(points))
-    pca = PCA(n_components=3)
-    pca.fit(array_stack)
-    middlepoint = pca.mean_
-    print(middlepoint)
-    """
+    min_coor = np.array([
+        min([p[0] for p in points]),
+        min([p[1] for p in points]),
+        min([p[2] for p in points])
+    ])
 
-    hsv = cv2.cvtColor(rgb, cv2.COLOR_RGB2HSV)
-    mask = cv2.inRange(hsv, (10, 100, 20), (25, 255, 255))
-    only_object = cv2.bitwise_and(rgb, rgb, mask=mask)
+    max_coor = np.array([
+        max([p[0] for p in points]),
+        max([p[1] for p in points]),
+        max([p[2] for p in points])
+    ])
+
+    midpoint = (max_coor+min_coor)/2
     
     pclFrame = ry_config.getFrame("pcl")
     if not pclFrame:
@@ -61,16 +60,16 @@ def getObject(bot, ry_config):
         ry_config.view_recopyMeshes()
 
         ry_config.addFrame('mid_point') \
-            .setPosition(middlepoint) \
+            .setPosition(midpoint) \
             .setShape(ry.ST.marker, size=[.2]) \
             .setColor([1, 1, 0])
     else:
         pclFrame.setPointCloud(np.array(points))
         ry_config.view_recopyMeshes()
         ry_config.getFrame('mid_point') \
-            .setPosition(middlepoint)
+            .setPosition(midpoint)
     
-    return middlepoint
+    return midpoint.tolist()
 
 def point2obj(bot, ry_config, objpos):
     C = ry_config
