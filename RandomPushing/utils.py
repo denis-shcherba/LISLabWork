@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 rng = default_rng()
 
 
-#RANSAC
+#RANSAC implementation
 class RANSAC:
     def __init__(self, n=10, k=100, t=0.05, d=10, model=None, loss=None, metric=None):
         self.n = n              # `n`: Minimum number of data points to estimate parameters
