@@ -98,11 +98,22 @@ def point2obj(bot, ry_config, objpos):
         bot.sync(C, .1)
 
 def plotArena(middleP, innerR, outerR, C, resolution=48):
-    
+    '''
+    Visualises the pushing area.
+
+    Args: 
+        middleP (np.ndarray): The center point of the arena in XYZ coordinates.
+        innerR (int): The inner radius of the arena.
+        outerR (ZZ): The outer radius of the arena.
+        C: The object or container for visualization frames.
+        resolution (int, optional): The number of points used to discretize the arena. Default is 48.
+
+    Returns:
+        None: Adds visualization frames representing red spheres for the inner and outer area.
+    '''
     step_size = 2*np.pi/resolution
     for i in range(resolution):
         angle = step_size*i
-
         dir_vec = np.array([np.cos(angle), np.sin(angle), 0])
         inner_point = middleP + innerR*dir_vec
         outer_point = middleP + outerR*dir_vec

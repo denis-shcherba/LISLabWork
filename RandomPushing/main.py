@@ -33,7 +33,7 @@ if __name__ == "__main__":
     non_f = 0
     obj_pos = INITIAL_OBJ_POS
 
-    plotArena(np.array([0, 0, .651]), INR, OTR, C)
+    plotArena(np.array([0, -0.21, .651]), INR, OTR, C)
 
     point2obj(bot, C, np.array(obj_pos))
     # getObj returns middlepoint or objpos, but no dist atm
@@ -41,7 +41,7 @@ if __name__ == "__main__":
     dist = np.linalg.norm(C.getFrame("camera").getPosition()-obj_pos)
     if dist != None: 
 
-        for i in range(10_000):
+        for i in range(10000):
 
             if not obj_pos:
                 print("Can't find object!")
