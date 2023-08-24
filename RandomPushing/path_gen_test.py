@@ -26,7 +26,7 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
-    screen.fill(white)
+    #screen.fill(white)
     sleep(.2)
     robot_pos = np.array([screen_width*.5, screen_height*.5])
     obj_pos = robot_pos+np.array([screen_width*.1, screen_height*.1])

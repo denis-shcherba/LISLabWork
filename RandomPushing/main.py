@@ -41,7 +41,7 @@ if __name__ == "__main__":
     dist = np.linalg.norm(C.getFrame("camera").getPosition()-obj_pos)
     if dist != None: 
 
-        for i in range(5):
+        for i in range(10_000):
 
             if not obj_pos:
                 print("Can't find object!")

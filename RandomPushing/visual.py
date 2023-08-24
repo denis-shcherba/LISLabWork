@@ -2,7 +2,7 @@ from robotic import ry
 import numpy as np
 from sklearn.decomposition import PCA
 import cv2
-
+from time import sleep 
 def getObject(bot, ry_config):
     """
     Computes center of point cloud from real sense sensor. 
@@ -15,7 +15,8 @@ def getObject(bot, ry_config):
         Cloud center or middle point (float list): [x, y, z].
 
     """
-    bot.sync(ry_config, .1)
+    sleep(.5)
+    bot.sync(ry_config, .0)
     rgb, depth, points = bot.getImageDepthPcl('camera', False)
     
     new_p = []
