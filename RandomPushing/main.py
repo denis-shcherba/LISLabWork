@@ -40,7 +40,7 @@ if __name__ == "__main__":
 
     point2obj(bot, C, np.array(obj_pos))
     # getObj returns middlepoint or objpos, but no dist atm
-    obj_pos  = getObject(bot, C) 
+    obj_pos  = getObject(bot, INR, OTR, robot_pos, C) 
     dist = np.linalg.norm(C.getFrame("camera").getPosition()-obj_pos)
     if dist != None: 
 
@@ -74,7 +74,7 @@ if __name__ == "__main__":
                 continue
                     
             point2obj(bot, C, np.array(obj_pos))
-            obj_pos = getObject(bot, C)
+            obj_pos = getObject(bot, INR, OTR, robot_pos, C)
             
             d["way_pos"]["end"] = [i for i in way_end]
 
