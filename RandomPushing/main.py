@@ -10,8 +10,10 @@ INITIAL_OBJ_POS = [-.50, .1, .69]
 DEBUG = False
 OBJ_HEIGHT = .08
 
-INR = .3
-OTR = 1
+INR = .25
+OTR = .8
+
+robot_pos = np.array([0, -0.21, .651])
 
 if __name__ == "__main__":
 
@@ -33,7 +35,8 @@ if __name__ == "__main__":
     non_f = 0
     obj_pos = INITIAL_OBJ_POS
 
-    plotArena(np.array([0, -0.21, .651]), INR, OTR, C)
+    # first input to plotArena hardcodes radius pos x,y,z
+    plotArena(robot_pos, INR, OTR, C)
 
     point2obj(bot, C, np.array(obj_pos))
     # getObj returns middlepoint or objpos, but no dist atm
@@ -50,7 +53,8 @@ if __name__ == "__main__":
             bot.home(C)
 
             #-- compute a motion (debug this inside the method)
-            way_start, way_end, _, _ = generate_waypointsv2(C, obj_pos, .3, inner_rad=INR, outer_rad=OTR, waypoints=WAYPOINTS)
+            way_start, way_end, _, _, success = generate_waypointsv2(C, obj_pos, obj_width=.3, robot_pos=robot_pos, inner_rad=INR, outer_rad=OTR, waypoints=WAYPOINTS)
+            if not success: break
             path, feasible = compute_motion(C, WAYPOINTS, np.array(way_start) - np.array(way_end), verbose)
             print('returned path shape: ', type(path), path.shape)
 

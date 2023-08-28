@@ -127,3 +127,20 @@ def plotArena(middleP, innerR, outerR, C, resolution=48):
             .setPosition(outer_point) \
             .setShape(ry.ST.sphere, size=[.02]) \
             .setColor([1, 0, 0])
+        
+def plotLine(ry_config, start, end, resolution=10):
+    seg = end-start
+    line_len = np.linalg.norm(seg)
+    segsize = line_len / resolution
+    seg /= line_len
+    seg *= segsize
+    for p in range(resolution+1):
+        position = start + (seg * p)
+        frame = ry_config.getFrame(f"line_{p}")
+        if not frame:
+            ry_config.addFrame(f"line_{p}") \
+                .setPosition(position) \
+                .setShape(ry.ST.sphere, size=[.02]) \
+                .setColor([0, 1, 0])
+        else:
+            frame.setPosition(position)

@@ -1,5 +1,7 @@
 import numpy as np
 
+### multiplied out version of line equation (vector form) into circle eq. seperated to a, b, c for final solving with abc-formula
+
 def line_circle_intersection(line_pos, line_vec, circle_pos, circle_radious):
 
     a = line_vec[0]**2 + line_vec[1]**2
