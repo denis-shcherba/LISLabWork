@@ -6,14 +6,14 @@ from random_paths import generate_waypointsv2, compute_motion, run_waypoints_one
 from visual import getObject, point2obj, plotArena
 
 WAYPOINTS = 6
-INITIAL_OBJ_POS = [-.50, .1, .69]
+INITIAL_OBJ_POS = [0, .5, .69]
 DEBUG = False
 OBJ_HEIGHT = .08
 
-INR = .25
-OTR = .8
+INR = None
+OTR = .3
 
-robot_pos = np.array([0, -0.21, .651])
+robot_pos = np.array([0, .5, .651])
 
 if __name__ == "__main__":
 

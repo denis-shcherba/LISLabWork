@@ -18,15 +18,20 @@ def generate_waypointsv2(C, obj_pos, obj_width, robot_pos=np.array([0, 0]), inne
     robot_pos = np.array((robot_pos[0], robot_pos[1]))
 
     rob2obj_len = np.linalg.norm(obj_pos-robot_pos)
-    if rob2obj_len < inner_rad or rob2obj_len >= outer_rad:
-        print("Object is outside of arena!")
-        return None, None, None, None, success
+    if inner_rad:
+        if rob2obj_len < inner_rad or rob2obj_len >= outer_rad:
+            print("Object is outside of arena!")
+            return None, None, None, None, success
+    else:
+        if rob2obj_len >= outer_rad:
+            print("Object is outside of arena!")
+            return None, None, None, None, success
     angle = np.random.random() * np.pi*2
 
     move_vec = np.array([np.cos(angle), np.sin(angle)])
 
     # obj_pos=posvector, move_vec= directions_vector, robot_pos = circle offset
-    inner_points = line_circle_intersection(obj_pos, move_vec, robot_pos, inner_rad)
+    inner_points = line_circle_intersection(obj_pos, move_vec, robot_pos, inner_rad) if inner_rad else []
     outer_points = line_circle_intersection(obj_pos, move_vec, robot_pos, outer_rad)
 
     if inner_points:

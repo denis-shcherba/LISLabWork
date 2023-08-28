@@ -115,13 +115,14 @@ def plotArena(middleP, innerR, outerR, C, resolution=48):
     for i in range(resolution):
         angle = step_size*i
         dir_vec = np.array([np.cos(angle), np.sin(angle), 0])
-        inner_point = middleP + innerR*dir_vec
         outer_point = middleP + outerR*dir_vec
 
-        C.addFrame(f'inner_arena_{i}') \
-            .setPosition(inner_point) \
-            .setShape(ry.ST.sphere, size=[.02]) \
-            .setColor([1, 0, 0])
+        if innerR:
+            inner_point = middleP + innerR*dir_vec
+            C.addFrame(f'inner_arena_{i}') \
+                .setPosition(inner_point) \
+                .setShape(ry.ST.sphere, size=[.02]) \
+                .setColor([1, 0, 0])
         
         C.addFrame(f'outer_arena_{i}') \
             .setPosition(outer_point) \
