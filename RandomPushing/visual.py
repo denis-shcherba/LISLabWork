@@ -36,7 +36,7 @@ def getObject(bot, inner_rad, outer_rad, arena_pos, ry_config):
     cameraFrame = ry_config.getFrame("camera")
     R, t = cameraFrame.getRotationMatrix(), cameraFrame.getPosition()
 
-    points = [R@np.matrix("1,0,0;0,0,-1;0,1,0")@p+t for p in points]
+    points = [R@p+t for p in points]
 
     
     objectpoints=[]
