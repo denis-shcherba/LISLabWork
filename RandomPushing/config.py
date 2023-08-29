@@ -1,6 +1,6 @@
 from robotic import ry
 
-def setup_config(waypoints=None, obj_pos=[-.50, .1, .69]):
+def setup_config(waypoints=None, obj_pos=[-.50, .1, .69], on_real=False):
     '''creates a config to work with'''
 
     C = ry.Config()
@@ -11,10 +11,11 @@ def setup_config(waypoints=None, obj_pos=[-.50, .1, .69]):
     f.setShape(ry.ST.camera, [.1])
     f.addAttributes({'focalLength':0.895, 'width':640., 'height':360.})
 
-    C.addFrame('obj') \
-        .setPosition(obj_pos) \
-        .setShape(ry.ST.cylinder, size=[.08, .06]) \
-        .setColor([1, .5, 0]) .setMass(.1) .setContact(True)
+    if not on_real:
+        C.addFrame('obj') \
+            .setPosition(obj_pos) \
+            .setShape(ry.ST.cylinder, size=[.08, .06]) \
+            .setColor([1, .5, 0]) .setMass(.1) .setContact(True)
     
     if waypoints:
         for i in range(waypoints):
@@ -34,10 +35,10 @@ def setup_config(waypoints=None, obj_pos=[-.50, .1, .69]):
             .setColor([0, 0 , 1])
     return C
 
-def startup_robot(C):
+def startup_robot(C, on_real):
     '''start the robot (or simulation)'''
 
-    bot = ry.BotOp(C, False)
+    bot = ry.BotOp(C, on_real)
     bot.home(C)
 
     bot.gripperClose(ry._left)

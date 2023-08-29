@@ -6,14 +6,16 @@ from random_paths import generate_waypointsv2, compute_motion, run_waypoints_one
 from visual import getObject, point2obj, plotArena
 
 WAYPOINTS = 6
-INITIAL_OBJ_POS = [0, .5, .69]
+INITIAL_OBJ_POS = [-.5, 0, .69]
 DEBUG = False
 OBJ_HEIGHT = .08
 
 INR = None
 OTR = .3
 
-robot_pos = np.array([0, .5, .651])
+ON_REAL = True
+
+robot_pos = np.array([-.5, 0, .651])
 
 if __name__ == "__main__":
 
@@ -22,14 +24,14 @@ if __name__ == "__main__":
     verbose = 1
 
     #-- define a configuration
-    C = setup_config(WAYPOINTS, INITIAL_OBJ_POS)
+    C = setup_config(WAYPOINTS, INITIAL_OBJ_POS, ON_REAL)
     if DEBUG:
         key = C.view(verbose>0, 'happy with the config?')
         print('key pressed: ', chr(key)) #use this for basic interaction, e.g. aborting the program
         if chr(key)=='q':
             exit()
 
-    bot = startup_robot(C)
+    bot = startup_robot(C, ON_REAL)
 
     data = []
     non_f = 0
@@ -41,50 +43,51 @@ if __name__ == "__main__":
     point2obj(bot, C, np.array(obj_pos))
     # getObj returns middlepoint or objpos, but no dist atm
     obj_pos  = getObject(bot, INR, OTR, robot_pos, C) 
-    dist = np.linalg.norm(C.getFrame("camera").getPosition()-obj_pos)
-    if dist != None: 
+    if obj_pos:
+        dist = np.linalg.norm(C.getFrame("camera").getPosition()-obj_pos)
+        if dist != None: 
 
-        for i in range(10000):
+            for i in range(10000):
 
-            if not obj_pos:
-                print("Can't find object!")
-                break
+                if not obj_pos:
+                    print("Can't find object!")
+                    break
 
-            bot.home(C)
+                bot.home(C)
 
-            #-- compute a motion (debug this inside the method)
-            way_start, way_end, _, _, success = generate_waypointsv2(C, obj_pos, obj_width=.3, robot_pos=robot_pos, inner_rad=INR, outer_rad=OTR, waypoints=WAYPOINTS)
-            if not success: break
-            path, feasible = compute_motion(C, WAYPOINTS, np.array(way_start) - np.array(way_end), verbose)
-            print('returned path shape: ', type(path), path.shape)
+                #-- compute a motion (debug this inside the method)
+                way_start, way_end, _, _, success = generate_waypointsv2(C, obj_pos, obj_width=.3, robot_pos=robot_pos, inner_rad=INR, outer_rad=OTR, waypoints=WAYPOINTS)
+                if not success: break
+                path, feasible = compute_motion(C, WAYPOINTS, np.array(way_start) - np.array(way_end), verbose)
+                print('returned path shape: ', type(path), path.shape)
 
-            #-- now, if we're happy with the motion, send it to the robot
-            if feasible:
-                d = {}
-                d["way_pos"] = {}
-                d["obj_pos"] = {}
-                d["obj_pos"]["start"] = [i for i in obj_pos]
-                d["way_pos"]["start"] = [i for i in way_start] 
+                #-- now, if we're happy with the motion, send it to the robot
+                if feasible:
+                    d = {}
+                    d["way_pos"] = {}
+                    d["obj_pos"] = {}
+                    d["obj_pos"]["start"] = [i for i in obj_pos]
+                    d["way_pos"]["start"] = [i for i in way_start] 
 
-                # send the path by individually sending waypoints 
-                run_waypoints_one_by_one(bot, path, True, C)
+                    # send the path by individually sending waypoints 
+                    run_waypoints_one_by_one(bot, path, True, C)
 
-            else:
-                non_f += 1
-                continue
-                    
-            point2obj(bot, C, np.array(obj_pos))
-            obj_pos = getObject(bot, INR, OTR, robot_pos, C)
-            
-            d["way_pos"]["end"] = [i for i in way_end]
+                else:
+                    non_f += 1
+                    continue
+                        
+                point2obj(bot, C, np.array(obj_pos))
+                obj_pos = getObject(bot, INR, OTR, robot_pos, C)
+                
+                d["way_pos"]["end"] = [i for i in way_end]
 
-            d["obj_pos"]["end"] = [i for i in obj_pos]
+                d["obj_pos"]["end"] = [i for i in obj_pos]
 
-            data.append(d)
+                data.append(d)
 
-    bot.home(C)
-    with open('data.json', 'w') as f:
-        json.dump(data, f)
+        bot.home(C)
+        with open('data.json', 'w') as f:
+            json.dump(data, f)
 
-    print("Non feasable paths: ", non_f)
-    del bot
+        print("Non feasable paths: ", non_f)
+        del bot

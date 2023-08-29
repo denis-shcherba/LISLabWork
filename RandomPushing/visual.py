@@ -1,5 +1,6 @@
 from robotic import ry
 import numpy as np
+from time import sleep
 
 def point_in_arena(point, inner_rad, outer_rad, arena_pos):
 
@@ -20,7 +21,7 @@ def getObject(bot, inner_rad, outer_rad, arena_pos, ry_config):
         Cloud center or middle point (float list): [x, y, z].
 
     """
-    
+
     bot.sync(ry_config, .0)
     rgb, depth, points = bot.getImageDepthPcl('camera', False)
     
@@ -31,18 +32,22 @@ def getObject(bot, inner_rad, outer_rad, arena_pos, ry_config):
                 new_p.append(p)
 
     points = new_p
+
     cameraFrame = ry_config.getFrame("camera")
     R, t = cameraFrame.getRotationMatrix(), cameraFrame.getPosition()
 
-    points = [R@p+t for p in points]
+    points = [R@np.matrix("1,0,0;0,0,-1;0,1,0")@p+t for p in points]
 
+    
     objectpoints=[]
     for p in points:
         if p[2] > .655 and point_in_arena(np.array(p), inner_rad, outer_rad, arena_pos):
             objectpoints.append(p)
     points = objectpoints
 
-    if not points: return []
+    if not points:
+        print("Object not found!")
+        return []
 
     min_coor = np.array([
         min([p[0] for p in points]),
