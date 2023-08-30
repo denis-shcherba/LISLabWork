@@ -11,12 +11,13 @@ def setup_config(waypoints=None, obj_pos=[-.50, .1, .69], on_real=False):
     f.setShape(ry.ST.camera, [.1])
     f.addAttributes({'focalLength':0.895, 'width':640., 'height':360.})
 
+    """
     if not on_real:
         C.addFrame('obj') \
             .setPosition(obj_pos) \
             .setShape(ry.ST.cylinder, size=[.08, .06]) \
             .setColor([1, .5, 0]) .setMass(.1) .setContact(True)
-    
+    """
     if waypoints:
         for i in range(waypoints):
             C.addFrame(f'way{i}') \

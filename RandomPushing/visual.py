@@ -9,19 +9,7 @@ def point_in_arena(point, inner_rad, outer_rad, arena_pos):
         if np.linalg.norm(arena_pos-point) <= inner_rad: return False
     return True
 
-def getObject(bot, inner_rad, outer_rad, arena_pos, ry_config):
-    """
-    Computes center of point cloud from real sense sensor. 
-
-    Args:
-        bot (roboter) : 
-        ry_config (environment config) :
-
-    Returns:
-        Cloud center or middle point (float list): [x, y, z].
-
-    """
-
+def getFilteredPointCloud(bot, ry_config, inner_rad, outer_rad, arena_pos, z_cutoff=.655):
     bot.sync(ry_config, .0)
     rgb, depth, points = bot.getImageDepthPcl('camera', False)
     
@@ -37,13 +25,29 @@ def getObject(bot, inner_rad, outer_rad, arena_pos, ry_config):
     R, t = cameraFrame.getRotationMatrix(), cameraFrame.getPosition()
 
     points = [R@p+t for p in points]
-
     
     objectpoints=[]
     for p in points:
-        if p[2] > .655 and point_in_arena(np.array(p), inner_rad, outer_rad, arena_pos):
+        if p[2] > z_cutoff and point_in_arena(np.array(p), inner_rad, outer_rad, arena_pos):
             objectpoints.append(p)
     points = objectpoints
+
+    return points
+
+def getObject(bot, inner_rad, outer_rad, arena_pos, ry_config):
+    """
+    Computes center of point cloud from real sense sensor. 
+
+    Args:
+        bot (roboter) : 
+        ry_config (environment config) :
+
+    Returns:
+        Cloud center or middle point (float list): [x, y, z].
+
+    """
+
+    points = getFilteredPointCloud(bot, ry_config, inner_rad, outer_rad, arena_pos)
 
     if not points:
         print("Object not found!")

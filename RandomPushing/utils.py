@@ -4,6 +4,7 @@ from numpy.random import default_rng
 import scipy.optimize
 import functools
 import matplotlib.pyplot as plt
+from robotic import ry
 
 rng = default_rng()
 
@@ -95,42 +96,30 @@ class PlanarRegressor:
             zz.append(z)
         return np.array(zz) 
 
-
-
-if __name__ == "__main__":
+def get_plane_from_points(points, ry_config):
+    """
+    Should be called at program start with no object on table
+    """
     regressor = RANSAC(model=PlanarRegressor(), loss=square_error_loss, metric=mean_square_error)
 
-    grid_res = 16
-    x, y, z = [], [], []
-    for i in range(grid_res):
-        for j in range(grid_res):
-            x.append(1-i*2/grid_res)
-            y.append(1-j*2/grid_res)
-            z.append(x[i]+y[i])
-
-    x = np.array(x)
-    y = np.array(y)
-    z = np.array(z)
-    for i, _ in enumerate(z):
-        x[i] += .08*(np.random.random()-0.5)
-        y[i] += .08*(np.random.random()-0.5)
-        if(np.random.random()<.25):
-            z[i] += (np.random.random()-0.5)
-
-        z[i] += .02*(np.random.random()-0.5)
+    x = np.array([p[0] for p in points])
+    y = np.array([p[1] for p in points])
+    z = np.array([p[2] for p in points])
 
     regressor.fit(x, y, z)
 
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
+    x = np.array([-.5, .5, .0])
+    y = np.array([.5, .5, -.5])
+    z = regressor.predict(x, y)
 
-    ax.scatter(x, y, z)
+    points = np.array([0, 0, 0])
+    for i in range(3):
+        points[i] = np.array([x[i], y[i], z[i]])
+    mid_point = np.mean(points)
+    normal = np.cross(points[1] - points[0], points[2] - points[0])
 
-
-    xx, yy = np.meshgrid([-1,1], [-1,1])
-    z = regressor.predict(xx, yy)
-    ax.plot_surface(xx, yy, z, alpha=0.2, color=[0,1,1])
-    plt.xlim(-1, 1)
-    plt.ylim(-1, 1)
-    plt.gca().set_aspect('equal')
-    plt.show()
+    ry_config.addFrame("predicted_table") \
+        .setShape(ry.ST.ssBox, size=[.5, .5, .2, .005]) \
+        .setPosition(mid_point) \
+        .setColor([.3, .3, 1., 0.5]) \
+        .setRotation(normal)
