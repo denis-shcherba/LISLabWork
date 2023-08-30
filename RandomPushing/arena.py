@@ -48,6 +48,7 @@ class CircularArena(Arena):
                 .setShape(ry.ST.sphere, size=[.02]) \
                 .setColor([1, 0, 0])
 
+
 class RectangularArena(Arena):
     def __init__(self, C, middleP, width, height):
         super().__init__(C, middleP, width, height)
