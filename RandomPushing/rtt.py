@@ -32,37 +32,50 @@ def steer_3d(from_points, to_point, step_size=0.5):
     Returns:
         new 3d coordinates (tuple): 3D points.
     '''
+     
     new_3dcoords = []
-    # For each dimension (x, y, z)
-    for i in range(3):  
+    for i in range(3):
         distance = to_point[i] - from_points[i]
-        # take min between step size and computed distance  
         step = min(step_size, abs(distance))
-        # linear iterpolation from points adhering to stepsize times step function 0 for 0 dist, -1 for dist < 0 and 1 for dist > 1
-        new_coordinate = from_points[i] + step * math.copysign(1, distance) 
-        new_3dcoords.append(new_coordinate)  # Add the new coordinate to the list
-    return tuple(new_3dcoords)  # Return the new configuration as a tuple
+        new_coordinate = from_points[i] + step * math.copysign(1, distance)
+        new_3dcoords.append(new_coordinate)
+    return tuple(new_3dcoords)
 
+def calculate_distances(points, obstacle_center):
+    distances = [abs(points[i] - obstacle_center[i]) for i in range(3)]
+    return distances
 
-def is_valid_config_3d(config, obstacles = [(2, 2, 2), (6, 6, 6)], obstacle_size = 1.0):
+def check_collision(distances, obstacle_dimensions):
     '''
     Checks for collision. 
 
     Args: 
-        config (tuple): 3D points.
-        obstacles (list of tuples): 3D points. 
-        obstacle size (float): size of obstacle. 
-
+        distances (list): of distances along x,y,z axis
+        obstacles dimensions (tuple): x,y,z coordinates 
     Returns:
         True or False (bool): False if colesison detected True if valid path  
     '''
-    # iterate over each obstacle
-    # if distance between the two is smaller than obstacle size, then its collision
-    # because points are within objects i.e., too close.  
+    for i in range(3):
+        if distances[i] > obstacle_dimensions[i] / 2.0:
+            return False
+    return True
+
+def is_valid_path(points, obstacles):
+    '''
+    Checks for valid path. 
+
+    Args: 
+        point (tuple): 3D points.
+        obstacles (dictionary of tuples): 3D points. 
+    Returns:
+        True or False (bool): False if colesison detected True if valid path  
+    '''
     for obstacle in obstacles:
-        # Check collision with each obstacle
-        if distance_3d(config, obstacle) < obstacle_size:
-            return False  # Collision detected
+        obstacle_center = obstacle['center']
+        obstacle_dimensions = obstacle['dimensions']
+        distances = calculate_distances(points, obstacle_center)
+        if check_collision(distances, obstacle_dimensions):
+            return False
     return True 
 
 def distance_3d(points1, points2):
@@ -78,22 +91,37 @@ def distance_3d(points1, points2):
 
     '''
     squared_sum = 0
-    for i in range(3):  # Assuming 3D space with x, y, z coordinates
+    for i in range(3):  
         squared_sum += (points1[i] - points2[i])**2
     return math.sqrt(squared_sum)
 
-def rrt_3d(start, goal, max_iterations=3000):
-    tree = [Node(start)]
+def rrt_3d(startpos, goalpos, obstacles, max_iterations=3000, threshold=0.5):
+    '''
+    Computes path between start and goal pos using rapidly exploring randomg trees (rrt).
+    
+    Args: 
+        startpos (tuple): x,y,z of 3D point. 
+        goalpos (tuple): x,y,z of 3D point.
+        max_iterations (int): number of iterations
+        threshold (float): treshold param to only construct path between two nodes if dist smaller than treshold. 
+        obstacles (list of tuples ): list of x,y,z coordinates i.e., [(2,2,2), (5,5,5)]
+    
+    Returns
+        eucledian distance (float): distance between the two 3D points. 
+
+    '''
+    
+    tree = [Node(startpos)]
 
     for _ in range(max_iterations):
         random_config = random_sample_3d()
         nearest_node = min(tree, key=lambda node: distance_3d(node.config, random_config))
 
-        new_config = steer_3d(nearest_node.config, random_config)
-        if is_valid_config_3d(new_config): # check collision
-            new_node = Node(new_config, parent=nearest_node)
+        new_points = steer_3d(nearest_node.config, random_config)
+        if is_valid_path(new_points, obstacles):
+            new_node = Node(new_points, parent=nearest_node)
             tree.append(new_node)
-            if distance_3d(new_config, goal) < 0.5:  # Adjust the threshold as needed
+            if distance_3d(new_points, goalpos) < threshold:  
                 return construct_path(new_node)
 
     return None
@@ -106,28 +134,20 @@ def construct_path(end_node):
         node = node.parent
     return list(reversed(path))
 
-# Start and End Goal
-start = (0, 0, 0)
-goal = (10, 10, 10)
-
-path = rrt_3d(start, goal)
-if path:
-    print("Path found:", path)
-else:
-    print("Path not found")
-
-
-
-# Visualization function to plot the environment and path
-def visualize_environment(path=None):
+def visualize_environment(path=None, obstacles=[]):
+    '''
+    Visualises rrt path and obstacles. 
+    '''
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
 
-    # Plot obstacles
-    for obstacle in [(2, 2, 2), (6, 6, 6)]:
-        ax.scatter(*obstacle, color='red', marker='s', s=100)
+    for obstacle in obstacles:
+        center = obstacle['center']
+        dimensions = obstacle['dimensions']
+        x, y, z = center
+        dx, dy, dz = dimensions
+        ax.bar3d(x - dx/2, y - dy/2, z - dz/2, dx, dy, dz, color='red', shade=True)
 
-    # Plot path if available
     if path:
         path_coords = list(zip(*path))
         ax.plot(*path_coords, marker='o', color='blue')
@@ -141,11 +161,15 @@ def visualize_environment(path=None):
 # Example usage and test
 start = (0, 0, 0)
 goal = (9, 9, 9)
-
-path = rrt_3d(start, goal)
+obstacles = [
+    {'center': (5, 5, 5), 'dimensions': (2, 2, 2)},
+    {'center': (2, 2, 2), 'dimensions': (1, 3, 1)}
+    # Add more obstacles here
+]
+path = rrt_3d(start, goal, obstacles)
 if path:
     print("Path found:", path)
-    visualize_environment(path)
+    visualize_environment(path, obstacles)
 else:
     print("Path not found")
-    visualize_environment()
+    visualize_environment(obstacles=obstacles)
