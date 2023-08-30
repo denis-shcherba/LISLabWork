@@ -1,8 +1,8 @@
 from robotic import ry
 import numpy as np
 from config import setup_config, startup_robot
-from visual import point2obj, getFilteredPointCloud
-from utils import get_plane_from_points
+from visual import point2obj, getFilteredPointCloud, getObject
+from utils import get_plane_from_points, point_above_plane
 
 WAYPOINTS = 6
 INITIAL_OBJ_POS = [-.5, 0, .69]
@@ -41,7 +41,10 @@ if __name__ == "__main__":
 
     point2obj(bot, C, np.array(obj_pos))
     # getObj returns middlepoint or objpos, but no dist atm
-    while True:
-        points  = getFilteredPointCloud(bot, C, INR, OTR, robot_pos, z_cutoff=0)
-        get_plane_from_points(points, C)
-        
+
+    getObject(bot, INR, OTR, robot_pos, C)
+
+    key = C.view(verbose>0, 'results')
+    print('key pressed: ', chr(key)) #use this for basic interaction, e.g. aborting the program
+    if chr(key)=='q':
+        exit()

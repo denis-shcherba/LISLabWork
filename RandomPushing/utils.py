@@ -3,8 +3,8 @@ import numpy as np
 from numpy.random import default_rng
 import scipy.optimize
 import functools
-import matplotlib.pyplot as plt
 from robotic import ry
+import random
 
 rng = default_rng()
 
@@ -94,12 +94,19 @@ class PlanarRegressor:
         for i, _ in enumerate(xx):
             z = a*xx[i] + b*yy[i] + c
             zz.append(z)
-        return np.array(zz) 
+        return np.array(zz)
+    
+def point_above_plane(point, normal, plane_point, offset=.01):
+    vector_to_point = (np.array(point)-np.array([.0, .0, offset])) - np.array(plane_point)
+    dot_product = np.dot(vector_to_point, normal)
+    return dot_product < 0
 
 def get_plane_from_points(points, ry_config):
     """
     Should be called at program start with no object on table
     """
+    points = random.sample(points, 256)
+
     regressor = RANSAC(model=PlanarRegressor(), loss=square_error_loss, metric=mean_square_error)
 
     x = np.array([p[0] for p in points])
@@ -112,14 +119,26 @@ def get_plane_from_points(points, ry_config):
     y = np.array([.5, .5, -.5])
     z = regressor.predict(x, y)
 
-    points = np.array([0, 0, 0])
+    points = [0, 0, 0]
     for i in range(3):
         points[i] = np.array([x[i], y[i], z[i]])
-    mid_point = np.mean(points)
+
+    mid_point = np.array([.0, .0, .0])
+    for i in range(3):
+        mid_point += points[i]
+    mid_point /= 3
+
     normal = np.cross(points[1] - points[0], points[2] - points[0])
 
-    ry_config.addFrame("predicted_table") \
-        .setShape(ry.ST.ssBox, size=[.5, .5, .2, .005]) \
-        .setPosition(mid_point) \
-        .setColor([.3, .3, 1., 0.5]) \
-        .setRotation(normal)
+    table_ball = ry_config.getFrame("predicted_table_point0")
+    if not table_ball:
+        for i in range(3):
+            ry_config.addFrame(f"predicted_table_point{i}") \
+                .setShape(ry.ST.sphere, size=[.05]) \
+                .setPosition(points[i]) \
+                .setColor([0, 0, 1])
+    else:
+        for i in range(3):
+            ry_config.getFrame(f"predicted_table_point{i}").setPosition(points[i])
+
+    return normal, mid_point

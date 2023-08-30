@@ -1,6 +1,6 @@
 from robotic import ry
 import numpy as np
-from time import sleep
+from utils import point_above_plane, get_plane_from_points
 
 def point_in_arena(point, inner_rad, outer_rad, arena_pos):
 
@@ -18,7 +18,6 @@ def getFilteredPointCloud(bot, ry_config, inner_rad, outer_rad, arena_pos, z_cut
         for p in lines: 
             if sum(p) != 0:
                 new_p.append(p)
-
     points = new_p
 
     cameraFrame = ry_config.getFrame("camera")
@@ -34,7 +33,7 @@ def getFilteredPointCloud(bot, ry_config, inner_rad, outer_rad, arena_pos, z_cut
 
     return points
 
-def getObject(bot, inner_rad, outer_rad, arena_pos, ry_config):
+def getObject(bot, inner_rad, outer_rad, arena_pos, ry_config, use_ransac=False):
     """
     Computes center of point cloud from real sense sensor. 
 
@@ -47,7 +46,16 @@ def getObject(bot, inner_rad, outer_rad, arena_pos, ry_config):
 
     """
 
-    points = getFilteredPointCloud(bot, ry_config, inner_rad, outer_rad, arena_pos)
+    if use_ransac:
+        points = getFilteredPointCloud(bot, ry_config, inner_rad, outer_rad, arena_pos, z_cutoff=0)
+        normal, plane_point = get_plane_from_points(points, ry_config)
+        npoints = []
+        for p in points:
+            if point_above_plane(p, normal, plane_point):
+                npoints.append(p)
+        points = npoints
+    else:
+        points = getFilteredPointCloud(bot, ry_config, inner_rad, outer_rad, arena_pos)
 
     if not points:
         print("Object not found!")
