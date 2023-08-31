@@ -4,6 +4,8 @@ import numpy as np
 from config import setup_config, startup_robot
 from random_paths import generate_waypointsv2, compute_motion, run_waypoints_one_by_one
 from visual import getObject, point2obj, plotArena
+from arena import CircularArena, RectangularArena
+
 
 WAYPOINTS = 6
 INITIAL_OBJ_POS = [-.5, 0, .69]
@@ -13,9 +15,10 @@ OBJ_HEIGHT = .08
 INR = None
 OTR = .3
 
-ON_REAL = False
+ON_REAL = True
+USE_RANSAC = False
 
-robot_pos = np.array([-.5, 0, .651])
+robot_pos = np.array([-.5, -.13, .651])
 
 if __name__ == "__main__":
 
@@ -38,11 +41,14 @@ if __name__ == "__main__":
     obj_pos = INITIAL_OBJ_POS
 
     # first input to plotArena hardcodes radius pos x,y,z
-    plotArena(robot_pos, INR, OTR, C)
+    #plotArena(robot_pos, INR, OTR, C)
+    circArenaInOut = CircularArena(C=C, middleP=robot_pos, innerR=INR, outerR=OTR)
+
+    circArenaInOut.plotArena()
 
     point2obj(bot, C, np.array(obj_pos))
     # getObj returns middlepoint or objpos, but no dist atm
-    obj_pos  = getObject(bot, INR, OTR, robot_pos, C) 
+    obj_pos  = getObject(bot, INR, OTR, robot_pos, C, use_ransac=USE_RANSAC) 
     if obj_pos:
         dist = np.linalg.norm(C.getFrame("camera").getPosition()-obj_pos)
         if dist != None: 
@@ -77,7 +83,7 @@ if __name__ == "__main__":
                     continue
                         
                 point2obj(bot, C, np.array(obj_pos))
-                obj_pos = getObject(bot, INR, OTR, robot_pos, C)
+                obj_pos = getObject(bot, INR, OTR, robot_pos, C, use_ransac=USE_RANSAC)
                 
                 d["way_pos"]["end"] = [i for i in way_end]
 

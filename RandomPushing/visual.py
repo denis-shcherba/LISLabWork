@@ -9,28 +9,30 @@ def point_in_arena(point, inner_rad, outer_rad, arena_pos):
         if np.linalg.norm(arena_pos-point) <= inner_rad: return False
     return True
 
-def getFilteredPointCloud(bot, ry_config, inner_rad, outer_rad, arena_pos, z_cutoff=.655):
+def getFilteredPointCloud(bot, ry_config, inner_rad, outer_rad, arena_pos, z_cutoff=.69):
     bot.sync(ry_config, .0)
-    rgb, depth, points = bot.getImageDepthPcl('camera', False)
-    
+    rgb, depth, points = bot.getImageDepthPcl('cameraWrist', False)
+
     new_p = []
     for lines in points:
         for p in lines: 
             if sum(p) != 0:
-                new_p.append(p)
-    points = new_p
+                new_p.append(p.tolist())
+    points = np.array(new_p)
 
-    cameraFrame = ry_config.getFrame("camera")
+    cameraFrame = ry_config.getFrame("cameraWrist")
+
     R, t = cameraFrame.getRotationMatrix(), cameraFrame.getPosition()
 
-    points = [R@p+t for p in points]
-    
+    points = points @ R.T
+    points = points + np.tile(t.T, (points.shape[0], 1))
+
     objectpoints=[]
     for p in points:
         if p[2] > z_cutoff and point_in_arena(np.array(p), inner_rad, outer_rad, arena_pos):
             objectpoints.append(p)
     points = objectpoints
-
+    
     return points
 
 def getObject(bot, inner_rad, outer_rad, arena_pos, ry_config, use_ransac=False):
