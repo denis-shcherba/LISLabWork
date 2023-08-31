@@ -45,7 +45,8 @@ if __name__ == "__main__":
     circArenaInOut = CircularArena(C=C, middleP=robot_pos, innerR=INR, outerR=OTR)
 
     circArenaInOut.plotArena()
-
+    
+    # -------- rectArena testing -----
     #rectArenaInOut = RectangularArena(C=C, middleP=robot_pos, height=1, width=10)
     #rectArenaInOut.plotArena()
 
