@@ -15,7 +15,7 @@ OBJ_HEIGHT = .08
 INR = None
 OTR = .3
 
-ON_REAL = True
+ON_REAL = False
 USE_RANSAC = False
 
 robot_pos = np.array([-.5, -.13, .651])
@@ -45,6 +45,9 @@ if __name__ == "__main__":
     circArenaInOut = CircularArena(C=C, middleP=robot_pos, innerR=INR, outerR=OTR)
 
     circArenaInOut.plotArena()
+
+    #rectArenaInOut = RectangularArena(C=C, middleP=robot_pos, height=1, width=10)
+    #rectArenaInOut.plotArena()
 
     point2obj(bot, C, np.array(obj_pos))
     # getObj returns middlepoint or objpos, but no dist atm
