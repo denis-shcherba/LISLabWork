@@ -70,8 +70,6 @@ while running:
             inner_rad=50
             pygame.draw.circle(screen, black, (robot_pos[0], robot_pos[1]), inner_rad, 2)
             start, end, intersect0, intersect1, _ = generate_waypoints_rect(None, obj_pos, 5, robot_pos=robot_pos, rect_width=rect_width, rect_height=rect_height, start_distance=20, inner_rad=inner_rad)
-
-
         else:
             start, end, intersect0, intersect1, _ = generate_waypoints_rect(None, obj_pos, 5, robot_pos=robot_pos, rect_width=rect_width, rect_height=rect_height, start_distance=20)
 
