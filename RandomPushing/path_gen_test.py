@@ -76,6 +76,12 @@ while running:
         
         pygame.draw.circle(screen, red, (obj_pos[0], obj_pos[1]), 7)
 
+
+        pygame.draw.circle(screen, green, (intersect0[0], intersect0[1]), 7)
+        pygame.draw.circle(screen, green, (intersect1[0], intersect1[1]), 7)
+
+        pygame.draw.circle(screen, salmon, (start[0], start[1]), 7)
+        pygame.draw.circle(screen, magenta, (end[0], end[1]), 7)
         #pygame.draw.circle(screen, (0, 255, 0), (intersect0[0], intersect0[1]), 7)
         #pygame.draw.circle(screen, (0, 255, 0), (intersect1[0], intersect1[1]), 7)
         outline_rect = pygame.Rect(rect_x, rect_y, rect_width, rect_height)

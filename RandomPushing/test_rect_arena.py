@@ -2,7 +2,7 @@ from robotic import ry
 import json
 import numpy as np
 from config import setup_config, startup_robot
-from random_paths import generate_waypointsv2, compute_motion, run_waypoints_one_by_one
+from random_paths import generate_waypointsv2, compute_motion, run_waypoints_one_by_one, generate_waypoints_rect
 from visual import getObject, point2obj, plotArena
 from arena import CircularArena, RectangularArena
 
@@ -11,7 +11,8 @@ WAYPOINTS = 6
 INITIAL_OBJ_POS = [-.5, 0, .69]
 DEBUG = False
 OBJ_HEIGHT = .08
-
+RECT_WIDTH=1
+RECT_HEIGHT=.8
 INR = None
 OTR = .3
 
@@ -41,14 +42,11 @@ if __name__ == "__main__":
     obj_pos = INITIAL_OBJ_POS
 
     # first input to plotArena hardcodes radius pos x,y,z
-    #plotArena(robot_pos, INR, OTR, C)
-    circArenaInOut = CircularArena(C=C, middleP=robot_pos, innerR=INR, outerR=OTR)
 
-    circArenaInOut.plotArena()
-    
+    #Arena = CircularArena(C=C, middleP=robot_pos, innerR=INR, outerR=OTR)
     # -------- rectArena testing -----
-    rectArenaInOut = RectangularArena(C=C, middleP=robot_pos, height=.3, width=.5)
-    rectArenaInOut.plotArena()
+    Arena = RectangularArena(C=C, middleP=robot_pos, height=RECT_HEIGHT, width=RECT_WIDTH, innerR=INR)
+    Arena.plotArena()
 
     point2obj(bot, C, np.array(obj_pos))
     # getObj returns middlepoint or objpos, but no dist atm
@@ -66,7 +64,8 @@ if __name__ == "__main__":
                 bot.home(C)
 
                 #-- compute a motion (debug this inside the method)
-                way_start, way_end, _, _, success = generate_waypointsv2(C, obj_pos, obj_width=.3, robot_pos=robot_pos, inner_rad=INR, outer_rad=OTR, waypoints=WAYPOINTS)
+                way_start, way_end, _, _, success = Arena.generate_waypoints(C, obj_pos, obj_width=.3, robot_pos=robot_pos, waypoints=WAYPOINTS)
+
                 if not success: break
                 path, feasible = compute_motion(C, WAYPOINTS, np.array(way_start) - np.array(way_end), verbose)
                 print('returned path shape: ', type(path), path.shape)
