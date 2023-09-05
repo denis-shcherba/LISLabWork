@@ -5,7 +5,7 @@ from visual import plotLine
 from random_paths import segment_line
 
 class Arena:
-    def __init__(self, C, middleP, width=None, height=None):
+    def __init__(self, C, middleP=np.array([0, 0]), width=None, height=None):
         self.C=C
         self.middleP= middleP
         self.width = width
@@ -138,7 +138,7 @@ class RectangularArena(Arena):
     def __init__(self, C, middleP, width, height, innerR=None, middlePCirc=None):
         super().__init__(C, middleP, width, height)
         self.innerR = innerR
-        if middlePCirc:
+        if len(middlePCirc):
             self.middlePCirc=middlePCirc
         else:
             self.middlePCirc = middleP
@@ -187,7 +187,7 @@ class RectangularArena(Arena):
                 .setPosition(outer_point) \
                 .setShape(ry.ST.sphere, size=[.02]) \
                 .setColor([1, 0, 0])
-    def generate_waypoints(self, C, obj_pos, obj_width, robot_pos=np.array([0, 0]), start_distance=.07, waypoints=None):
+    def generate_waypoints(self, C, obj_pos, obj_width, start_distance=.07, waypoints=None):
 
         success = False
         try:
@@ -195,16 +195,16 @@ class RectangularArena(Arena):
         except:
             z = 0
         obj_pos = np.array((obj_pos[0], obj_pos[1]))
-        robot_pos = np.array((robot_pos[0], robot_pos[1]))
-
-        rob2obj_len = np.linalg.norm(obj_pos-robot_pos)
+        self.middleP = np.array((self.middleP[0], self.middleP[1]))
+        self.middlePCirc = np.array((self.middlePCirc[0], self.middlePCirc[1]))
+        rob2obj_len = np.linalg.norm(obj_pos-self.middlePCirc)
         
         if self.innerR:
             if rob2obj_len < self.innerR:
                 print("Object is outside of arena!")
                 return None, None, None, None, success
         else:
-            if obj_pos[0] > robot_pos[0]+1/2*self.width or obj_pos[0] < robot_pos[0]-1/2*self.width or obj_pos[1] > robot_pos[1]+1/2*self.height or obj_pos[1] < robot_pos[1]-1/2*self.height:
+            if obj_pos[0] > self.middleP[0]+1/2*self.width or obj_pos[0] < self.middleP[0]-1/2*self.width or obj_pos[1] > self.middleP[1]+1/2*self.height or obj_pos[1] < self.middleP[1]-1/2*self.height:
                 print("Object is outside of arena!")
                 return None, None, None, None, success
         angle = np.random.random() * np.pi*2
@@ -212,8 +212,8 @@ class RectangularArena(Arena):
         move_vec = np.array([np.cos(angle), np.sin(angle)])
 
         # obj_pos=posvector, move_vec= directions_vector, robot_pos = circle offset
-        inner_points = line_circle_intersection(obj_pos, move_vec, robot_pos, self.innerR) if self.innerR else []
-        outer_points = line_rect_intersection(obj_pos, move_vec, robot_pos, self.width, self.height)
+        inner_points = line_circle_intersection(obj_pos, move_vec, self.middlePCirc, self.innerR) if self.innerR else []
+        outer_points = line_rect_intersection(obj_pos, move_vec, self.middleP, self.width, self.height)
 
         if inner_points:
             if np.linalg.norm(outer_points[1]-obj_pos) > np.linalg.norm(outer_points[0]-obj_pos):
@@ -248,6 +248,10 @@ class RectangularArena(Arena):
         start_vec *= start_distance + obj_width
         start_point = obj_pos + start_vec
 
+
+        #hier aendern wahrscheinlich,sollte dafuer soirgen, dass er nicht an arenarand geht TODO
+        end_vec-=np.linalg.norm(end_vec)*obj_width*end_vec
+       
         end_vec *= np.random.random()
         end_point = obj_pos + end_vec
 

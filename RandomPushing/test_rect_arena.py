@@ -11,16 +11,16 @@ WAYPOINTS = 6
 INITIAL_OBJ_POS = [-.5, 0, .69]
 DEBUG = False
 OBJ_HEIGHT = .08
-RECT_WIDTH=1
-RECT_HEIGHT=.8
-INR = None
-OTR = .3
+RECT_WIDTH=.9
+RECT_HEIGHT=.6
+INR = .14
+OTR = None
 
-ON_REAL = False
+ON_REAL = True
 USE_RANSAC = False
 
-robot_pos = np.array([-.5, -.13, .651])
-
+robot_pos = np.array([-.03, -.22, .651])
+RECT_ARENA_MIDDLEP=np.array([-.3, -.13, .651])
 if __name__ == "__main__":
 
     #-- load parameters, typically automatically from 'rai.cfg'
@@ -45,12 +45,12 @@ if __name__ == "__main__":
 
     #Arena = CircularArena(C=C, middleP=robot_pos, innerR=INR, outerR=OTR)
     # -------- rectArena testing -----
-    Arena = RectangularArena(C=C, middleP=robot_pos, height=RECT_HEIGHT, width=RECT_WIDTH, innerR=INR)
+    Arena = RectangularArena(C=C, middleP=RECT_ARENA_MIDDLEP, height=RECT_HEIGHT,  width=RECT_WIDTH, innerR=INR, middlePCirc=robot_pos)
     Arena.plotArena()
 
     point2obj(bot, C, np.array(obj_pos))
     # getObj returns middlepoint or objpos, but no dist atm
-    obj_pos  = getObject(bot, INR, OTR, robot_pos, C, use_ransac=USE_RANSAC) 
+    obj_pos  = getObject(bot, C, RECT_ARENA_MIDDLEP, INR, OTR, use_ransac=USE_RANSAC, width=RECT_WIDTH, height=RECT_HEIGHT) 
     if obj_pos:
         dist = np.linalg.norm(C.getFrame("camera").getPosition()-obj_pos)
         if dist != None: 
@@ -64,7 +64,7 @@ if __name__ == "__main__":
                 bot.home(C)
 
                 #-- compute a motion (debug this inside the method)
-                way_start, way_end, _, _, success = Arena.generate_waypoints(C, obj_pos, obj_width=.3, robot_pos=robot_pos, waypoints=WAYPOINTS)
+                way_start, way_end, _, _, success = Arena.generate_waypoints(C, obj_pos, obj_width=.3, waypoints=WAYPOINTS)
 
                 if not success: break
                 path, feasible = compute_motion(C, WAYPOINTS, np.array(way_start) - np.array(way_end), verbose)
@@ -86,7 +86,7 @@ if __name__ == "__main__":
                     continue
                         
                 point2obj(bot, C, np.array(obj_pos))
-                obj_pos = getObject(bot, INR, OTR, robot_pos, C, use_ransac=USE_RANSAC)
+                obj_pos = getObject(bot, C, RECT_ARENA_MIDDLEP, inner_rad=INR, outer_rad=OTR, use_ransac=USE_RANSAC, width=RECT_WIDTH, height=RECT_HEIGHT)
                 
                 d["way_pos"]["end"] = [i for i in way_end]
 
