@@ -20,11 +20,11 @@ bot.home(C)
 
 rgb, depth = bot.getImageAndDepth("cameraWrist")
 
-fig = plt.figure(figsize=(10,5))
-axs = fig.subplots(1, 2)
-axs[0].imshow(rgb)
-axs[1].matshow(depth)
-plt.show()
+#fig = plt.figure(figsize=(10,5))
+#axs = fig.subplots(1, 2)
+#axs[0].imshow(rgb)
+#axs[1].matshow(depth)
+#plt.show()
 
 # If camera is not attached, we should get black pixels 
 total_pixel_sum = np.sum(rgb)
