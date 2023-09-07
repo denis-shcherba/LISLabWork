@@ -4,7 +4,7 @@ import time
 import matplotlib.pyplot as plt
 import cv2
 
-ON_TRUE = False
+ON_TRUE = True
 
 C = ry.Config()
 C.addFile(ry.raiPath('../rai-robotModels/scenarios/pandaSingle.g'))
@@ -27,23 +27,23 @@ while True:
        break
     rgb, depth, points = bot.getImageDepthPcl('cameraWrist', False)
     
-    if c % 100 == 0:
+    if c % 35 == 0:
         fig = plt.figure(figsize=(10,5))
         axs = fig.subplots(1, 2)
         axs[0].imshow(rgb)
         axs[1].matshow(depth)
         plt.show()
 
-        # If camera is not attached, we should get black pixels 
-        total_pixel_sum = np.sum(rgb)
+    # If camera is not attached, we should get black pixels 
+    total_pixel_sum = np.sum(rgb)
 
-        # Check if the total sum is zero (indicating a black image)
-        if total_pixel_sum == 0:
-            print("Camera records a black image. Check light and camera sensor. ")
-        elif total_pixel_sum == (255 * rgb.shape[2]) * rgb.shape[0] * rgb.shape[1]:
-            print("Camera records a white image. Check light and camera sensor. ")
-        else:
-            print("Camera working.")
+    # Check if the total sum is zero (indicating a black image)
+    if total_pixel_sum == 0:
+        print("Camera records a black image. Check light and camera sensor. ")
+    elif total_pixel_sum == (255 * rgb.shape[2]) * rgb.shape[0] * rgb.shape[1]:
+        print("Camera records a white image. Check light and camera sensor. ")
+    else:
+        print("Camera working.")
 
 
 

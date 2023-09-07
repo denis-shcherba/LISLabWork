@@ -11,6 +11,7 @@ WAYPOINTS = 6
 #INITIAL_OBJ_POS = [-.5, 0, .69]
 INITIAL_OBJ_POS = [-.4, 0, .69]
 
+GRIPPER_WIDTH = .0  #relative gripper width (0 means fully closed, .5 means half open, 1 fully open)
 DEBUG = False
 OBJ_HEIGHT = .08
 RECT_WIDTH=.89
@@ -44,7 +45,8 @@ if __name__ == "__main__":
     obj_pos = INITIAL_OBJ_POS
 
     # first input to plotArena hardcodes radius pos x,y,z
-
+    if bot.getKeyPressed()==ord('q'):
+        exit()
     #Arena = CircularArena(C=C, middleP=robot_pos, innerR=INR, outerR=OTR)
     # -------- rectArena testing -----
     Arena = RectangularArena(C=C, middleP=RECT_ARENA_MIDDLEP, height=RECT_HEIGHT,  width=RECT_WIDTH, innerR=INR, middlePCirc=robot_pos)
@@ -58,13 +60,16 @@ if __name__ == "__main__":
         if dist != None: 
 
             for i in range(10000):
-
+                bot.sync(C, .1)
+                #if bot.getKeyPressed()==ord('q'):
+                    #TODO bring home safely
+                    #break
                 if not obj_pos:
                     print("Can't find object!")
                     break
 
                 bot.home(C)
-                bot.gripperClose(ry._left)
+                bot.gripperOpen(ry._left, width=GRIPPER_WIDTH*.075)
 
                 #-- compute a motion (debug this inside the method)
                 way_start, way_end, _, _, success = Arena.generate_waypoints(C, obj_pos, obj_width=.3, waypoints=WAYPOINTS)
