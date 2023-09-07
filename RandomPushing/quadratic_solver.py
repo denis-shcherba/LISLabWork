@@ -26,14 +26,15 @@ def line_rect_intersection(line_pos, line_vec, pos, rect_width, rect_height):
     left_x= -1/2*rect_width+pos[0]
     right_x= 1/2*rect_width+pos[0]
     upper_y= 1/2*rect_height+pos[1]
-    lower_y= -1/2*rect_height+pos[1]
+    lower_y= -1/2*rect_height+pos[1]    # Find the parametric equation of the line: P = position_vector + t * direction_vector
+    # where P is any point on the line, and t is a scalar parameter.
 
     # Define the rectangle
     rectangle_x = (left_x, right_x)  # X-coordinate range of the rectangle
     rectangle_y = (lower_y, upper_y)  # Y-coordinate range of the rectangle
 
     # Find the parametric equation of the line: P = position_vector + t * direction_vector
-    # where P is any point on the line, and t is a scalar parameter.
+    # where P is any point on the line, and t is a scalar parameter
 
     # Initialize lists to store intersection points
     intersections = []

@@ -13,12 +13,12 @@ DEBUG = False
 OBJ_HEIGHT = .08
 
 INR = None
-OTR = .5
+OTR = .3
 
 ON_REAL = True
 USE_RANSAC = False
 
-robot_pos = np.array([-.5, -.13, .651])
+robot_pos = np.array([-.54, -.17, .651])
 
 if __name__ == "__main__":
 
@@ -52,7 +52,7 @@ if __name__ == "__main__":
 
     point2obj(bot, C, np.array(obj_pos))
     # getObj returns middlepoint or objpos, but no dist atm
-    obj_pos  = getObject(bot, INR, OTR, robot_pos, C, use_ransac=USE_RANSAC) 
+    obj_pos  = getObject(bot, C, robot_pos, INR, OTR, use_ransac=USE_RANSAC) 
     if obj_pos:
         dist = np.linalg.norm(C.getFrame("camera").getPosition()-obj_pos)
         if dist != None: 
@@ -87,7 +87,7 @@ if __name__ == "__main__":
                     continue
                         
                 point2obj(bot, C, np.array(obj_pos))
-                obj_pos = getObject(bot, INR, OTR, robot_pos, C, use_ransac=USE_RANSAC)
+                obj_pos = getObject(bot, C, robot_pos, INR, OTR, use_ransac=USE_RANSAC)
                 
                 d["way_pos"]["end"] = [i for i in way_end]
 

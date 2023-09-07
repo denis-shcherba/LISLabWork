@@ -246,7 +246,7 @@ class RectangularArena(Arena):
 
         start_vec /= np.linalg.norm(start_vec)
         start_vec *= start_distance + obj_width
-        start_point = obj_pos + start_vec
+        start_point = obj_pos + 0.6*start_vec
 
 
         #hier aendern wahrscheinlich,sollte dafuer soirgen, dass er nicht an arenarand geht TODO

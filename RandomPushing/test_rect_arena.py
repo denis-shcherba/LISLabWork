@@ -8,19 +8,21 @@ from arena import CircularArena, RectangularArena
 
 
 WAYPOINTS = 6
-INITIAL_OBJ_POS = [-.5, 0, .69]
+#INITIAL_OBJ_POS = [-.5, 0, .69]
+INITIAL_OBJ_POS = [-.4, 0, .69]
+
 DEBUG = False
 OBJ_HEIGHT = .08
-RECT_WIDTH=.9
-RECT_HEIGHT=.6
+RECT_WIDTH=.89
+RECT_HEIGHT=.59
 INR = .14
 OTR = None
 
 ON_REAL = True
 USE_RANSAC = False
 
-robot_pos = np.array([-.03, -.22, .651])
-RECT_ARENA_MIDDLEP=np.array([-.3, -.13, .651])
+robot_pos = np.array([-.03, -.24, .651])
+RECT_ARENA_MIDDLEP=np.array([-.23, -.16, .651])
 if __name__ == "__main__":
 
     #-- load parameters, typically automatically from 'rai.cfg'
@@ -62,6 +64,7 @@ if __name__ == "__main__":
                     break
 
                 bot.home(C)
+                bot.gripperClose(ry._left)
 
                 #-- compute a motion (debug this inside the method)
                 way_start, way_end, _, _, success = Arena.generate_waypoints(C, obj_pos, obj_width=.3, waypoints=WAYPOINTS)
@@ -93,10 +96,15 @@ if __name__ == "__main__":
                 d["obj_pos"]["end"] = [i for i in obj_pos]
 
                 data.append(d)
-
+                """if chr(key)=='q':
+                    del bot
+                    del C
+                    exit()"""
+        
         bot.home(C)
         with open('data.json', 'w') as f:
             json.dump(data, f)
 
         print("Non feasable paths: ", non_f)
         del bot
+        del C

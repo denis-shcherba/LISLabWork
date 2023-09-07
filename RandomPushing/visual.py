@@ -7,7 +7,6 @@ def point_in_arena(point, arena_pos, inner_rad=None, outer_rad=None, width=None,
         if np.linalg.norm(arena_pos-point) >= outer_rad: return False
     if inner_rad:
         if np.linalg.norm(arena_pos-point) <= inner_rad: return False
-    #TODO
     if width and height:
         lenvec = point-arena_pos
         if point[0]>=1/2*width+arena_pos[0] or point[0]<=-1/2*width+arena_pos[0]:
@@ -17,7 +16,7 @@ def point_in_arena(point, arena_pos, inner_rad=None, outer_rad=None, width=None,
     return True
 
 def getFilteredPointCloud(bot, ry_config, arena_pos, inner_rad=None, outer_rad=None, z_cutoff=.69, height =None, width=None):
-    OFFSET=.05
+    OFFSET=.04
     bot.sync(ry_config, .0)
     rgb, depth, points = bot.getImageDepthPcl('cameraWrist', False)
 
@@ -38,9 +37,8 @@ def getFilteredPointCloud(bot, ry_config, arena_pos, inner_rad=None, outer_rad=N
     objectpoints=[]
     for p in points:
         if p[2] > z_cutoff and point_in_arena(np.array(p), arena_pos, inner_rad, outer_rad, width=width, height=height):
-            objectpoints.append(p)
+            objectpoints.append(p-np.array([0,0,OFFSET]))
     points = objectpoints
-    points[2]-=.03
     return points
 
 def getObject(bot, ry_config,arena_pos, inner_rad=None, outer_rad=None, use_ransac=False, width=None, height=None):
@@ -57,7 +55,7 @@ def getObject(bot, ry_config,arena_pos, inner_rad=None, outer_rad=None, use_rans
     """
 
     if use_ransac:
-        points = getFilteredPointCloud(bot, ry_config,  arena_pos, inner_rad=None, outer_rad=None, z_cutoff=0, width=None, height=None)
+        points = getFilteredPointCloud(bot, ry_config,  arena_pos, inner_rad=inner_rad, outer_rad=outer_rad, z_cutoff=0, width=width, height=height)
         normal, plane_point = get_plane_from_points(points, ry_config)
         npoints = []
         for p in points:
@@ -65,7 +63,7 @@ def getObject(bot, ry_config,arena_pos, inner_rad=None, outer_rad=None, use_rans
                 npoints.append(p)
         points = npoints
     else:
-        points = getFilteredPointCloud(bot, ry_config, arena_pos, inner_rad, outer_rad=outer_rad, width=width, height=height)
+        points = getFilteredPointCloud(bot, ry_config, arena_pos, inner_rad=inner_rad, outer_rad=outer_rad, width=width, height=height)
 
     if not points:
         print("Object not found!")
