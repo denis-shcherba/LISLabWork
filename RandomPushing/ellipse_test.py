@@ -19,7 +19,7 @@ if __name__ == "__main__":
 
     #-- define a configuration
     C = setup_config(WAYPOINTS, INITIAL_OBJ_POS)
-    bot = startup_robot(C)
+    bot = startup_robot(C, False)
 
     bot.home(C)
 
@@ -28,11 +28,11 @@ if __name__ == "__main__":
     komo.setTiming(1., 1, 1., 0)
     komo.addObjective([], ry.FS.accumulatedCollisions, [], ry.OT.eq)
     komo.addObjective([], ry.FS.jointLimits, [], ry.OT.ineq)
-
+    komo.addObjective([], ry.FS.positionDiff, ["l_gripper", "obj"], ry.OT.eq, [1e2], [.05])
     # Robot gripper has to be looking down
     opos = C.getFrame("obj").getPosition()
     gpos = C.getFrame("l_gripper").getPosition()
-    komo.addObjective([1.], ry.FS.vectorZ, ["l_gripper"], ry.OT.eq, [1e1], (opos-gpos)*-1)
+    #komo.addObjective([1.], ry.FS.vectorZ, ["l_gripper"], ry.OT.eq, [1e1], (opos-gpos)*-1)
 
     ret = ry.NLP_Solver() \
         .setProblem(komo.nlp()) \

@@ -20,6 +20,9 @@ def flyToPoint(point, ry_config, bot, height=1):
     # Robot gripper has to be looking down
     komo.addObjective([], ry.FS.vectorZ, ["l_gripper"], ry.OT.eq, [0.5], [0, 0, 1])
     komo.addObjective([1.], ry.FS.position, ["l_gripper"], ry.OT.eq, [1e1], [point[0], point[1], height])
+    
+    komo.addObjective([], ry.FS.distance, ["l_gripper", obj], ry.OT.eq, [1e2], 10)
+    #komo.addObjective([1.], ry.FS.distance, [arm, obj1], ry.OT.eq, [1e2], 10)
 
     ret = ry.NLP_Solver() \
         .setProblem(komo.nlp()) \

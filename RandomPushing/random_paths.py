@@ -185,6 +185,10 @@ def push_problem(C, mutli_waypoints, hand_direction):
     komo.addControlObjective([], 0, 1e-2)
     komo.addControlObjective([], 1, 1e1)
 
+    #komo.addControlObjective([], 0, 1e-2)
+
+
+
     komo.addObjective([], ry.FS.accumulatedCollisions, [], ry.OT.eq)
     komo.addObjective([], ry.FS.jointLimits, [], ry.OT.ineq)
     

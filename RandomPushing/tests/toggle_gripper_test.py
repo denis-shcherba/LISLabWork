@@ -2,6 +2,9 @@ from robotic import ry
 import numpy as np
 import time
 
+#TODO basically, not really needed tho now that the gripper opening works.
+# maybe implement test in the future
+
 ON_REAL=False
 
 ry.params_add({'physx/motorKp': 10000., 'physx/motorKd': 1000.})

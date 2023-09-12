@@ -4,7 +4,7 @@ import time
 import matplotlib.pyplot as plt
 import cv2
 
-ON_TRUE = True
+ON_TRUE = False
 
 C = ry.Config()
 C.addFile(ry.raiPath('../rai-robotModels/scenarios/pandaSingle.g'))
@@ -23,7 +23,7 @@ c = 0
 while True:
     c += 1
     bot.sync(C, .1)
-    if bot.getKeyPressed()==ord('e'):
+    if bot.getKeyPressed()==ord('q'):
        break
     rgb, depth, points = bot.getImageDepthPcl('cameraWrist', False)
     

@@ -115,6 +115,7 @@ def point2obj(bot, ry_config, objpos):
     # opos = C.getFrame("obj").getPosition()
     gpos = C.getFrame("l_gripper").getPosition()
     komo.addObjective([1.], ry.FS.vectorZ, ["l_gripper"], ry.OT.eq, [1e1], gpos-objpos)
+    #komo.addObjective([], ry.FS.positionDiff, ["l_gripper", "obj"], ry.OT.eq, [1e2], [.34])
 
     ret = ry.NLP_Solver() \
         .setProblem(komo.nlp()) \

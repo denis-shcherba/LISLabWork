@@ -16,10 +16,11 @@ DEBUG = False
 OBJ_HEIGHT = .08
 RECT_WIDTH=.89
 RECT_HEIGHT=.59
-INR = .14
+INR = .21
 OTR = None
+ITERATIONS = 10000 #number of rand. pushing iterations
 
-ON_REAL = True
+ON_REAL = False
 USE_RANSAC = False
 
 robot_pos = np.array([-.03, -.24, .651])
@@ -59,7 +60,7 @@ if __name__ == "__main__":
         dist = np.linalg.norm(C.getFrame("camera").getPosition()-obj_pos)
         if dist != None: 
 
-            for i in range(10000):
+            for i in range(ITERATIONS):
                 bot.sync(C, .1)
                 #if bot.getKeyPressed()==ord('q'):
                     #TODO bring home safely

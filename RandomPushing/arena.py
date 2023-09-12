@@ -249,8 +249,8 @@ class RectangularArena(Arena):
         start_point = obj_pos + 0.6*start_vec
 
 
-        #hier aendern wahrscheinlich,sollte dafuer soirgen, dass er nicht an arenarand geht TODO
-        end_vec-=np.linalg.norm(end_vec)*obj_width*end_vec
+        #hier aendern wahrscheinlich,sollte dafuer sorgen, dass er nicht an arenarand geht TODO
+        #end_vec-=np.linalg.norm(end_vec)*obj_width*end_vec
        
         end_vec *= np.random.random()
         end_point = obj_pos + end_vec
