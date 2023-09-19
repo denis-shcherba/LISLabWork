@@ -3,7 +3,7 @@ import json
 import numpy as np
 from config import setup_config, startup_robot
 from random_paths import generate_waypoints, compute_motion, run_waypoints_one_by_one
-from bird_search import flyToPoint, getBirdView
+from RandomPushing.utils.bird_search import flyToPoint, getBirdView
 from visual import getObject
 from time import sleep
 

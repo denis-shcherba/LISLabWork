@@ -1,7 +1,7 @@
 from robotic import ry
 import numpy as np
 
-from quadratic_solver import line_circle_intersection, line_rect_intersection
+from utils.quadratic_solver import line_circle_intersection, line_rect_intersection
 from visual import plotLine
 
 def segment_line(point1, point2, point_between):

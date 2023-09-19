@@ -96,7 +96,7 @@ if __name__ == "__main__":
                 data.append(d)
 
         bot.home(C)
-        with open('data.json', 'w') as f:
+        with open('data/data.json', 'w') as f:
             json.dump(data, f)
 
         print("Non feasable paths: ", non_f)

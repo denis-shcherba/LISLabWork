@@ -1,7 +1,7 @@
 from robotic import ry
 
 from config import setup_config, startup_robot
-from bird_search import flyToPoint, getBirdView
+from RandomPushing.utils.bird_search import flyToPoint, getBirdView
 
 if __name__ == "__main__":
     ry.params_print()

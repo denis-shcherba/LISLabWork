@@ -1,6 +1,6 @@
 from robotic import ry
 import numpy as np
-from utils import point_above_plane, get_plane_from_points
+from utils.ransac import point_above_plane, get_plane_from_points
 
 def point_in_arena(point, arena_pos, inner_rad=None, outer_rad=None, width=None, height=None):
     if outer_rad:
