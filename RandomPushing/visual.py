@@ -15,8 +15,7 @@ def point_in_arena(point, arena_pos, inner_rad=None, outer_rad=None, width=None,
            return False
     return True
 
-def getFilteredPointCloud(bot, ry_config, arena_pos, inner_rad=None, outer_rad=None, z_cutoff=.69, height =None, width=None):
-    OFFSET=.04
+def getFilteredPointCloud(bot, ry_config, arena_pos, inner_rad=None, outer_rad=None, z_cutoff=.65, height =None, width=None):
     bot.sync(ry_config, .0)
     rgb, depth, points = bot.getImageDepthPcl('cameraWrist', False)
 
@@ -37,7 +36,7 @@ def getFilteredPointCloud(bot, ry_config, arena_pos, inner_rad=None, outer_rad=N
     objectpoints=[]
     for p in points:
         if p[2] > z_cutoff and point_in_arena(np.array(p), arena_pos, inner_rad, outer_rad, width=width, height=height):
-            objectpoints.append(p-np.array([0,0,OFFSET]))
+            objectpoints.append(p-np.array([0, 0, 0]))
     points = objectpoints
     return points
 

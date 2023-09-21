@@ -15,7 +15,7 @@ OBJ_HEIGHT = .08
 INR = None
 OTR = .3
 
-ON_REAL = True
+ON_REAL = False
 USE_RANSAC = False
 
 robot_pos = np.array([-.54, -.17, .651])
