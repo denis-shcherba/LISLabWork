@@ -20,7 +20,7 @@ INR = .21
 OTR = None
 ITERATIONS = 10000 #number of rand. pushing iterations
 
-ON_REAL = False
+ON_REAL = True
 USE_RANSAC = False
 
 robot_pos = np.array([-.03, -.24, .651])

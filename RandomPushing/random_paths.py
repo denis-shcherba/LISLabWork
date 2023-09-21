@@ -185,17 +185,9 @@ def push_problem(C, mutli_waypoints, hand_direction):
     komo.addControlObjective([], 0, 1e-2)
     komo.addControlObjective([], 1, 1e1)
 
-    #komo.addControlObjective([], 0, 1e-2)
-
-
-
     komo.addObjective([], ry.FS.accumulatedCollisions, [], ry.OT.eq)
     komo.addObjective([], ry.FS.jointLimits, [], ry.OT.ineq)
     
-    
-    # komo.addObjective([], ry.FS.vectorZ, ['l_gripper'], ry.OT.eq, [1e1], hand_direction)
-
-
     if mutli_waypoints:
         #komo.addObjective([1], ry.FS.poseDiff, ['l_gripper', 'wayStart'], ry.OT.eq, [1e1])
 
@@ -225,8 +217,6 @@ def compute_motion(C, multi_waypoints, hand_direction, verbose):
     return komo.getPath(), ret.feasible
 
 def run_waypoints_one_by_one(bot, path, wait, C):
-    '''run a list of waypoi        komo.addObjective([], ry.FS.vectorZ, ['l_gripper'], ry.OT.eq, [1e-5], hand_direction)
-nts on the bot (or sim)'''
 
     # add the path points by appending individual waypoints to the spline buffer (spline will have zero velocity at waypoints)
     bot.moveTo(path[0], 1., False)

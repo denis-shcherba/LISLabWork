@@ -14,7 +14,7 @@ OBJ_HEIGHT = .08
 INR = None
 OTR = .3
 
-ON_REAL = False
+ON_REAL = True
 USE_RANSAC = False
 
 robot_pos = np.array([-.54, -.17, .651])
@@ -26,7 +26,7 @@ if __name__ == "__main__":
     verbose = 1
 
     #-- define a configuration
-    C = setup_config(WAYPOINTS, INITIAL_OBJ_POS, ON_REAL, debug=DEBUG)
+    C = setup_config(WAYPOINTS, INITIAL_OBJ_POS, False, debug=DEBUG)
     if DEBUG:
         key = C.view(verbose>0, 'happy with the config?')
         print('key pressed: ', chr(key)) #use this for basic interaction, e.g. aborting the program
@@ -41,5 +41,5 @@ if __name__ == "__main__":
     circArenaInOut.plotArena()
 
     point2obj(bot, C, np.array(obj_pos))
-    points = getFilteredPointCloud(bot, C, robot_pos, outer_rad=OTR)
-    viewPointCloud(points)
+    points, colors = getFilteredPointCloud(bot, C, robot_pos, outer_rad=OTR)
+    viewPointCloud(points, colors)

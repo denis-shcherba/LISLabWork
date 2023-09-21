@@ -14,17 +14,30 @@ def point_in_arena(point, arena_pos, inner_rad=None, outer_rad=None, width=None,
            return False
     return True
 
-def getFilteredPointCloud(bot, ry_config, arena_pos, inner_rad=None, outer_rad=None, z_cutoff=.65, height =None, width=None):
+def getFilteredPointCloud(bot, ry_config, arena_pos, inner_rad=None, outer_rad=None, z_cutoff=.67, height =None, width=None):
     bot.sync(ry_config, .0)
     rgb, depth, points = bot.getImageDepthPcl('cameraWrist', False)
+
+    new_rgb = []
+    for lines in rgb:
+        for c in lines: 
+            new_rgb.append(c.tolist())
+    rgb = new_rgb
 
     new_p = []
     for lines in points:
         for p in lines: 
-            if sum(p) != 0:
-                new_p.append(p.tolist())
-    points = np.array(new_p)
+            new_p.append(p.tolist())
+    points = new_p
 
+    new_rgb = []
+    new_p = []
+    for i, p in enumerate(points):
+        if sum(p) != 0:
+            new_rgb.append(rgb[i])
+            new_p.append(p)
+    points = np.array(new_p)
+    
     cameraFrame = ry_config.getFrame("cameraWrist")
 
     R, t = cameraFrame.getRotationMatrix(), cameraFrame.getPosition()
@@ -33,10 +46,12 @@ def getFilteredPointCloud(bot, ry_config, arena_pos, inner_rad=None, outer_rad=N
     points = points + np.tile(t.T, (points.shape[0], 1))
 
     objectpoints=[]
-    for p in points:
+    colors = []
+    for i, p in enumerate(points):
         if p[2] > z_cutoff and point_in_arena(np.array(p), arena_pos, inner_rad, outer_rad, width=width, height=height):
             objectpoints.append(p)
-    return objectpoints
+            colors.append(rgb[i])
+    return objectpoints, colors
 
 def getObject(bot, ry_config, arena_pos, inner_rad=None, outer_rad=None, use_ransac=False, width=None, height=None):
     """
@@ -52,7 +67,7 @@ def getObject(bot, ry_config, arena_pos, inner_rad=None, outer_rad=None, use_ran
     """
 
     if use_ransac:
-        points = getFilteredPointCloud(bot, ry_config,  arena_pos, inner_rad=inner_rad, outer_rad=outer_rad, z_cutoff=0, width=width, height=height)
+        points, _ = getFilteredPointCloud(bot, ry_config,  arena_pos, inner_rad=inner_rad, outer_rad=outer_rad, z_cutoff=0, width=width, height=height)
         normal, plane_point = get_plane_from_points(points, ry_config)
         npoints = []
         for p in points:
@@ -60,7 +75,7 @@ def getObject(bot, ry_config, arena_pos, inner_rad=None, outer_rad=None, use_ran
                 npoints.append(p)
         points = npoints
     else:
-        points = getFilteredPointCloud(bot, ry_config, arena_pos, inner_rad=inner_rad, outer_rad=outer_rad, width=width, height=height)
+        points, _ = getFilteredPointCloud(bot, ry_config, arena_pos, inner_rad=inner_rad, outer_rad=outer_rad, width=width, height=height)
 
     if not points:
         print("Object not found!")
@@ -100,21 +115,21 @@ def getObject(bot, ry_config, arena_pos, inner_rad=None, outer_rad=None, use_ran
     return midpoint.tolist()
 
 def point2obj(bot, ry_config, objpos):
-    C = ry_config
-    q_now = C.getJointState()
+    ry_config.getFrame("predicted_obj").setPosition(objpos)
+    q_now = ry_config.getJointState()
 
-    bot.home(C)
+    bot.home(ry_config)
     q_home = bot.get_qHome()
 
     komo = ry.KOMO()
-    komo.setConfig(C, True)
+    komo.setConfig(ry_config, True)
     komo.setTiming(1., 1, 1., 0)
     komo.addObjective([], ry.FS.accumulatedCollisions, [], ry.OT.eq)
     komo.addObjective([], ry.FS.jointLimits, [], ry.OT.ineq)
 
     # Should be predicted obj instead of obj
-    komo.addObjective([1.], ry.FS.positionRel, ["obj", "cameraWrist"], ry.OT.eq, [1.], [.0, .0, -.3])
-    komo.addObjective([1.], ry.FS.position, ["l_gripper"], ry.OT.ineq, np.array([[.0, .0, -100.]]), [0, 0, 1.05])
+    komo.addObjective([1.], ry.FS.positionRel, ["predicted_obj", "cameraWrist"], ry.OT.eq, [1.], [.0, .0, -.3])
+    komo.addObjective([1.], ry.FS.position, ["l_gripper"], ry.OT.ineq, np.array([[.0, .0, -100.]]), [0, 0, .8])
     komo.addObjective([], ry.FS.qItself, [], ry.OT.sos, [.1], q_home)
     komo.addObjective([], ry.FS.qItself, [], ry.OT.sos, [.1], q_now)
 
@@ -127,7 +142,7 @@ def point2obj(bot, ry_config, objpos):
         
     bot.moveTo(komo.getPath()[0], 1., False)
     while bot.getTimeToEnd() > 0:
-        bot.sync(C, .1)
+        bot.sync(ry_config, .1)
 
 def plotArena(middleP, innerR, outerR, C, resolution=48):
     '''
