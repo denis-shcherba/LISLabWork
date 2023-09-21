@@ -7,7 +7,7 @@ from random_paths import segment_line
 class Arena:
     def __init__(self, C, middleP=np.array([0, 0]), width=None, height=None):
         self.C=C
-        self.middleP= middleP
+        self.middleP = middleP
         self.width = width
         self.height = height
 

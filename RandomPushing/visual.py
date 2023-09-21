@@ -4,14 +4,13 @@ from utils.ransac import point_above_plane, get_plane_from_points
 
 def point_in_arena(point, arena_pos, inner_rad=None, outer_rad=None, width=None, height=None):
     if outer_rad:
-        if np.linalg.norm(arena_pos-point) >= outer_rad: return False
+        if np.linalg.norm((arena_pos-point)[:2]) >= outer_rad: return False
     if inner_rad:
-        if np.linalg.norm(arena_pos-point) <= inner_rad: return False
+        if np.linalg.norm((arena_pos-point)[:2]) <= inner_rad: return False
     if width and height:
-        lenvec = point-arena_pos
-        if point[0]>=1/2*width+arena_pos[0] or point[0]<=-1/2*width+arena_pos[0]:
+        if point[0] >= .5*width+arena_pos[0] or point[0] <= -.5*width+arena_pos[0]:
             return False
-        elif point[1]>=1/2*height+arena_pos[1] or point[1]<=-1/2*height+arena_pos[1]: 
+        elif point[1] >= .5*height+arena_pos[1] or point[1] <= -.5*height+arena_pos[1]: 
            return False
     return True
 
@@ -36,11 +35,10 @@ def getFilteredPointCloud(bot, ry_config, arena_pos, inner_rad=None, outer_rad=N
     objectpoints=[]
     for p in points:
         if p[2] > z_cutoff and point_in_arena(np.array(p), arena_pos, inner_rad, outer_rad, width=width, height=height):
-            objectpoints.append(p-np.array([0, 0, 0]))
-    points = objectpoints
-    return points
+            objectpoints.append(p)
+    return objectpoints
 
-def getObject(bot, ry_config,arena_pos, inner_rad=None, outer_rad=None, use_ransac=False, width=None, height=None):
+def getObject(bot, ry_config, arena_pos, inner_rad=None, outer_rad=None, use_ransac=False, width=None, height=None):
     """
     Computes center of point cloud from real sense sensor. 
 
@@ -103,18 +101,22 @@ def getObject(bot, ry_config,arena_pos, inner_rad=None, outer_rad=None, use_rans
 
 def point2obj(bot, ry_config, objpos):
     C = ry_config
+    q_now = C.getJointState()
+
     bot.home(C)
+    q_home = bot.get_qHome()
+
     komo = ry.KOMO()
     komo.setConfig(C, True)
     komo.setTiming(1., 1, 1., 0)
     komo.addObjective([], ry.FS.accumulatedCollisions, [], ry.OT.eq)
     komo.addObjective([], ry.FS.jointLimits, [], ry.OT.ineq)
 
-    # Robot gripper has to be looking down
-    # opos = C.getFrame("obj").getPosition()
-    gpos = C.getFrame("l_gripper").getPosition()
-    komo.addObjective([1.], ry.FS.vectorZ, ["l_gripper"], ry.OT.eq, [1e1], gpos-objpos)
-    #komo.addObjective([], ry.FS.positionDiff, ["l_gripper", "obj"], ry.OT.eq, [1e2], [.34])
+    # Should be predicted obj instead of obj
+    komo.addObjective([1.], ry.FS.positionRel, ["obj", "cameraWrist"], ry.OT.eq, [1.], [.0, .0, -.3])
+    komo.addObjective([1.], ry.FS.position, ["l_gripper"], ry.OT.ineq, np.array([[.0, .0, -100.]]), [0, 0, 1.05])
+    komo.addObjective([], ry.FS.qItself, [], ry.OT.sos, [.1], q_home)
+    komo.addObjective([], ry.FS.qItself, [], ry.OT.sos, [.1], q_now)
 
     ret = ry.NLP_Solver() \
         .setProblem(komo.nlp()) \

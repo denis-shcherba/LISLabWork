@@ -1,6 +1,6 @@
 from robotic import ry
 
-def setup_config(waypoints=None, obj_pos=[-.50, .1, .69], on_real=False):
+def setup_config(waypoints=None, obj_pos=[-.50, .1, .69], on_real=False, debug=False):
     '''creates a config to work with'''
 
     C = ry.Config()
@@ -11,6 +11,11 @@ def setup_config(waypoints=None, obj_pos=[-.50, .1, .69], on_real=False):
     f.setShape(ry.ST.camera, [.1])
     f.addAttributes({'focalLength':0.895, 'width':640., 'height':360.})
 
+    if debug:
+        C.addFrame("z-limit") \
+            .setShape(ry.ST.ssBox, size=[2., 2., .1, .005]) \
+            .setPosition([0., 0., 1]) \
+            .setColor([1., 0., 0., .5])
     
     if not on_real:
         C.addFrame('obj') \
