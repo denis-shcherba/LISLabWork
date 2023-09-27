@@ -2,9 +2,9 @@ from robotic import ry
 import json
 import numpy as np
 from config import setup_config, startup_robot
-from random_paths import generate_waypointsv2, compute_motion, run_waypoints_one_by_one, generate_waypoints_rect
-from visual import getObject, point2obj, plotArena
-from arena import CircularArena, RectangularArena
+from random_paths import compute_motion, run_waypoints_one_by_one
+from visual import getObject, point2obj
+from arena import RectangularArena
 
 
 WAYPOINTS = 6
@@ -20,7 +20,7 @@ INR = .21
 OTR = None
 ITERATIONS = 10000 #number of rand. pushing iterations
 
-ON_REAL = True
+ON_REAL = False
 USE_RANSAC = False
 
 robot_pos = np.array([-.03, -.24, .651])
@@ -70,7 +70,6 @@ if __name__ == "__main__":
                     break
 
                 bot.home(C)
-                bot.gripperOpen(ry._left, width=GRIPPER_WIDTH*.075)
 
                 #-- compute a motion (debug this inside the method)
                 way_start, way_end, _, _, success = Arena.generate_waypoints(C, obj_pos, obj_width=.3, waypoints=WAYPOINTS)
@@ -85,7 +84,7 @@ if __name__ == "__main__":
                     d["way_pos"] = {}
                     d["obj_pos"] = {}
                     d["obj_pos"]["start"] = [i for i in obj_pos]
-                    d["way_pos"]["start"] = [i for i in way_start] 
+                    d["way_pos"]["start"] = [i for i in way_start]
 
                     # send the path by individually sending waypoints 
                     run_waypoints_one_by_one(bot, path, True, C)
