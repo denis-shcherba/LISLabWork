@@ -2,19 +2,7 @@ from robotic import ry
 import numpy as np
 from utils.ransac import point_above_plane, get_plane_from_points
 
-def point_in_arena(point, arena_pos, inner_rad=None, outer_rad=None, width=None, height=None):
-    if outer_rad:
-        if np.linalg.norm((arena_pos-point)[:2]) >= outer_rad: return False
-    if inner_rad:
-        if np.linalg.norm((arena_pos-point)[:2]) <= inner_rad: return False
-    if width and height:
-        if point[0] >= .5*width+arena_pos[0] or point[0] <= -.5*width+arena_pos[0]:
-            return False
-        elif point[1] >= .5*height+arena_pos[1] or point[1] <= -.5*height+arena_pos[1]: 
-           return False
-    return True
-
-def getFilteredPointCloud(bot, ry_config, arena_pos, inner_rad=None, outer_rad=None, z_cutoff=.67, height =None, width=None):
+def getFilteredPointCloud(bot, ry_config, arena, z_cutoff=.67):
     bot.sync(ry_config, .0)
     rgb, depth, points = bot.getImageDepthPcl('cameraWrist', False)
 
@@ -48,12 +36,12 @@ def getFilteredPointCloud(bot, ry_config, arena_pos, inner_rad=None, outer_rad=N
     objectpoints=[]
     colors = []
     for i, p in enumerate(points):
-        if p[2] > z_cutoff and point_in_arena(np.array(p), arena_pos, inner_rad, outer_rad, width=width, height=height):
+        if p[2] > z_cutoff and arena.point_in_arena(np.array(p)):
             objectpoints.append(p)
             colors.append(rgb[i])
     return objectpoints, colors
 
-def getObject(bot, ry_config, arena_pos, inner_rad=None, outer_rad=None, use_ransac=False, width=None, height=None):
+def getObject(bot, ry_config, arena, use_ransac=False):
     """
     Computes center of point cloud from real sense sensor. 
 
@@ -67,7 +55,7 @@ def getObject(bot, ry_config, arena_pos, inner_rad=None, outer_rad=None, use_ran
     """
 
     if use_ransac:
-        points, _ = getFilteredPointCloud(bot, ry_config,  arena_pos, inner_rad=inner_rad, outer_rad=outer_rad, z_cutoff=0, width=width, height=height)
+        points, _ = getFilteredPointCloud(bot, ry_config, arena, z_cutoff=0)
         normal, plane_point = get_plane_from_points(points, ry_config)
         npoints = []
         for p in points:
@@ -75,7 +63,7 @@ def getObject(bot, ry_config, arena_pos, inner_rad=None, outer_rad=None, use_ran
                 npoints.append(p)
         points = npoints
     else:
-        points, _ = getFilteredPointCloud(bot, ry_config, arena_pos, inner_rad=inner_rad, outer_rad=outer_rad, width=width, height=height)
+        points, _ = getFilteredPointCloud(bot, ry_config, arena)
 
     if not points:
         print("Object not found!")

@@ -66,8 +66,7 @@ class CircularArena(Arena):
         '''
 
         # Check if object is inside the arena
-        rob2obj_len = np.linalg.norm(obj_pos-self.middleP)
-        if rob2obj_len >= self.outerR or (self.innerR and rob2obj_len < self.innerR):
+        if not self.point_in_arena(obj_pos):
             print("Object is outside of arena!")
             return None, None, None, None, False
         
@@ -126,6 +125,10 @@ class CircularArena(Arena):
             way1.setPosition(point1)
 
         return start_point, end_point, point0, point1, True    
+    
+    def point_in_arena(self, point):
+        rob2obj_len = np.linalg.norm(point[:2]-self.middleP[:2])
+        return not (rob2obj_len >= self.outerR or (self.innerR and rob2obj_len < self.innerR))
 
 
 class RectangularArena(Arena):
@@ -203,7 +206,7 @@ class RectangularArena(Arena):
         '''
             
         # Check if object is inside the arena
-        if self.point_in_rect(obj_pos) or (self.innerR and np.linalg.norm(obj_pos-self.middlePCirc) < self.innerR):
+        if not self.point_in_arena(obj_pos):
             print("Object is outside of arena!")
             return None, None, None, None, False
         
@@ -263,3 +266,6 @@ class RectangularArena(Arena):
             way1.setPosition(point1)
 
         return start_point, end_point, point0, point1, True
+    
+    def point_in_arena(self, point):
+        return self.point_in_rect(point) or (self.innerR and np.linalg.norm(point[:2]-self.middlePCirc[:2]) < self.innerR)

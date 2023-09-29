@@ -42,13 +42,11 @@ if __name__ == "__main__":
     point2obj(bot, C, np.array(obj_pos))
 
     # Capture midpoint from point cloud
-    obj_pos  = getObject(bot, C, robot_pos, arena)
+    obj_pos  = getObject(bot, C, arena)
     
     for i in range(3):
 
-        if not obj_pos:
-            print("Can't find object!")
-            break
+        if not obj_pos: break
 
         bot.home(C)
 
@@ -67,7 +65,7 @@ if __name__ == "__main__":
             run_waypoints_one_by_one(bot, path, True, C)
             # Check new object position
             point2obj(bot, C, np.array(obj_pos))
-            obj_pos = getObject(bot, C, robot_pos, arena)
+            obj_pos = getObject(bot, C, arena)
             
             # Store information
             data.append({
