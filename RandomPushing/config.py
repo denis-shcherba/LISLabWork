@@ -1,6 +1,6 @@
 from robotic import ry
 
-def setup_config(obj_pos=[-.50, .1, .69], on_real=False, debug=False):
+def setup_config(waypoints=None, obj_pos=[-.50, .1, .69], on_real=False, debug=False):
     '''creates a config to work with'''
 
     C = ry.Config()
@@ -28,16 +28,22 @@ def setup_config(obj_pos=[-.50, .1, .69], on_real=False, debug=False):
         .setPosition(obj_pos) \
         .setColor([1, 0, 0])
 
-    C.addFrame('start_point') \
-        .setShape(ry.ST.sphere, size=[.01]) \
-        .setPosition([0, .0, .0]) \
-        .setColor([0, 0, 1])
-    
-    C.addFrame('end_point') \
-        .setShape(ry.ST.sphere, size=[.01]) \
-        .setPosition([0, .0, .0]) \
-        .setColor([0, 0 , 1])
-    
+    if waypoints:
+        for i in range(waypoints):
+            C.addFrame(f'way{i}') \
+                .setShape(ry.ST.sphere, size=[.01]) \
+                .setPosition([0, .0, .0]) \
+                .setColor([0, 0, 1])
+    else:
+        C.addFrame('start_point') \
+            .setShape(ry.ST.sphere, size=[.01]) \
+            .setPosition([0, .0, .0]) \
+            .setColor([0, 0, 1])
+        
+        C.addFrame('end_point') \
+            .setShape(ry.ST.sphere, size=[.01]) \
+            .setPosition([0, .0, .0]) \
+            .setColor([0, 0 , 1])
     return C
 
 def startup_robot(C, on_real):
