@@ -35,7 +35,7 @@ if __name__ == "__main__":
     obj_pos = INITIAL_OBJ_POS
 
     # Generate Arena
-    arena = CircularArena(middleP=robot_pos, innerR=None, outerR=.3)
+    arena = RectangularArena(middleP=robot_pos, innerR=.1, width=0.7, height=0.8)
     arena.plotArena(C)
 
     # Point towards set initial object position

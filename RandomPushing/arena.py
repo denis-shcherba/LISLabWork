@@ -79,9 +79,10 @@ class CircularArena(Arena):
 
         # The intersection fuctions remove the z value of vector, so we nee to put it back
         try: z = obj_pos[2]
-        except: z = 0
-        inner_points = [np.array([i[0], i[1], z]) for i in inner_points]
-        outer_points = [np.array([i[0], i[1], z]) for i in outer_points]
+        except: z = None
+        if z != None:
+            inner_points = [np.array([i[0], i[1], z]) for i in inner_points]
+            outer_points = [np.array([i[0], i[1], z]) for i in outer_points]
 
         # Select relevant intersection points
         if inner_points:
@@ -213,7 +214,7 @@ class RectangularArena(Arena):
 
         # Calculate intersections with inner/outer boundaries
         inner_points = line_circle_intersection(obj_pos, move_vec, self.middlePCirc, self.innerR) if self.innerR else []
-        outer_points = line_rect_intersection(obj_pos, move_vec, self.middleP, self.width, self.height)
+        outer_points = line_rect_intersection(obj_pos[:2], move_vec, self.middleP[:2], self.width, self.height)
 
         # The intersection fuctions remove the z value of vector, so we nee to put it back
         try: z = obj_pos[2]
@@ -265,4 +266,4 @@ class RectangularArena(Arena):
         return start_point, end_point, point0, point1, True
     
     def point_in_arena(self, point):
-        return self.point_in_rect(point) or (self.innerR and np.linalg.norm(point[:2]-self.middlePCirc[:2]) < self.innerR)
+        return not (self.point_in_rect(point) or (self.innerR and np.linalg.norm(point[:2]-self.middlePCirc[:2]) < self.innerR))
