@@ -33,6 +33,12 @@ def setup_config(obj_pos=[-.50, .1, .69], on_real=False, debug=False):
             .setShape(ry.ST.sphere, size=[.01]) \
             .setPosition([0, .0, .0]) \
             .setColor([0, 0, 1])
+        
+    for i in range(8):
+        C.addFrame(f'view_point_{i}') \
+            .setPosition([0, 0, 0]) \
+            .setShape(ry.ST.sphere, size=[.02]) \
+            .setColor([1, 1, 0])
     
     return C
 

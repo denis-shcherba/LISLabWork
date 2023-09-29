@@ -180,3 +180,39 @@ def plotLine(ry_config, start, end, resolution=10):
                 .setColor([0, 1, 0])
         else:
             frame.setPosition(position)
+
+def scanObject(bot, ry_config, obj_pos, arena, gripper_height=.3, gripper_distance=.2):
+
+    all_points = []
+    angle_step = 2*np.pi/8
+    for i in range(8):
+        angle = angle_step * i
+        new_view = np.array([
+            gripper_distance * np.sin(angle),
+            gripper_distance * np.cos(angle),
+            gripper_height
+        ]) + obj_pos
+
+        ry_config.getFrame(f'view_point_{i}').setPosition(new_view)
+        bot.sync(ry_config)
+
+        komo = ry.KOMO()
+        komo.setConfig(ry_config, True)
+        komo.setTiming(2, 1, 1., 2)
+
+        komo.addObjective([], ry.FS.accumulatedCollisions, [], ry.OT.eq)
+        komo.addObjective([], ry.FS.jointLimits, [], ry.OT.ineq)
+
+        komo.addObjective([2], ry.FS.position, ['l_gripper'], ry.OT.eq, new_view)
+        komo.addObjective([2], ry.FS.vectorZ, ["l_gripper"], ry.OT.eq, obj_pos-new_view)
+
+        ret = ry.NLP_Solver().setProblem(komo.nlp()).setOptions(stopTolerance=1e-2, verbose=0).solve()
+        print(ret)
+        bot.move(komo.getPath(), [3.])
+        while bot.getTimeToEnd() > 0:
+            bot.sync(ry_config, .1)
+
+        points, _ = getFilteredPointCloud(bot, ry_config, arena)
+        all_points.append(points)
+    
+    return all_points
