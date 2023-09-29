@@ -11,11 +11,6 @@ INITIAL_OBJ_POS = [-.5, 0, .69]
 DEBUG = False
 OBJ_HEIGHT = .08
 
-INR = None
-OTR = .3
-
-ARENA_TYPE = "CIRCLE"
-
 ON_REAL = False
 
 robot_pos = np.array([-.54, -.17, .651])
@@ -40,14 +35,14 @@ if __name__ == "__main__":
     obj_pos = INITIAL_OBJ_POS
 
     # Generate Arena
-    arena = CircularArena(middleP=robot_pos, innerR=INR, outerR=OTR)
+    arena = CircularArena(middleP=robot_pos, innerR=None, outerR=.3)
     arena.plotArena(C)
 
     # Point towards set initial object position
     point2obj(bot, C, np.array(obj_pos))
 
     # Capture midpoint from point cloud
-    obj_pos  = getObject(bot, C, robot_pos, INR, OTR)
+    obj_pos  = getObject(bot, C, robot_pos, arena)
     
     for i in range(3):
 
@@ -72,7 +67,7 @@ if __name__ == "__main__":
             run_waypoints_one_by_one(bot, path, True, C)
             # Check new object position
             point2obj(bot, C, np.array(obj_pos))
-            obj_pos = getObject(bot, C, robot_pos, INR, OTR)
+            obj_pos = getObject(bot, C, robot_pos, arena)
             
             # Store information
             data.append({
