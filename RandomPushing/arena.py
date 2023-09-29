@@ -2,6 +2,7 @@ import numpy as np
 from robotic import ry
 from utils.quadratic_solver import line_circle_intersection, line_rect_intersection
 from visual import plotLine
+from random_paths import segment_line
 
 class Arena:
     def __init__(self, middleP=np.array([0, 0])):
@@ -49,8 +50,6 @@ class CircularArena(Arena):
             
     def generate_waypoints(self, obj_pos, obj_width=0, start_distance=.07, ry_config=None):
         '''
-        Steers or moves towards target objects within a given constraint i.e., step size.
-
         Args:
             obj_pos: Position of object in arena 
             obj_width: Width of the object
@@ -119,10 +118,10 @@ class CircularArena(Arena):
         if ry_config:
             plotLine(ry_config, np.array([point0[0], point0[1], .651]), np.array([point1[0], point1[1], .651]))
             
-            way0 = ry_config.getFrame('start_point')
-            way0.setPosition(point0)
-            way1 = ry_config.getFrame('end_point')
-            way1.setPosition(point1)
+            points = segment_line(start_point, end_point, 6)
+            for i, p in enumerate(points):
+                way = ry_config.getFrame(f'way{i}')
+                way.setPosition(p)
 
         return start_point, end_point, point0, point1, True    
     
@@ -189,8 +188,6 @@ class RectangularArena(Arena):
             
     def generate_waypoints(self, obj_pos, obj_width=0, start_distance=.07, ry_config=None):
         '''
-        Steers or moves towards target objects within a given constraint i.e., step size.
-
         Args:
             obj_pos: Position of object in arena 
             obj_width: Width of the object
@@ -260,10 +257,10 @@ class RectangularArena(Arena):
         if ry_config:
             plotLine(ry_config, np.array([point0[0], point0[1], .651]), np.array([point1[0], point1[1], .651]))
             
-            way0 = ry_config.getFrame('start_point')
-            way0.setPosition(point0)
-            way1 = ry_config.getFrame('end_point')
-            way1.setPosition(point1)
+            points = segment_line(start_point, end_point, 6)
+            for i, p in enumerate(points):
+                way = ry_config.getFrame(f'way{i}')
+                way.setPosition(p)
 
         return start_point, end_point, point0, point1, True
     

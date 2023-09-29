@@ -28,15 +28,11 @@ def setup_config(obj_pos=[-.50, .1, .69], on_real=False, debug=False):
         .setPosition(obj_pos) \
         .setColor([1, 0, 0])
 
-    C.addFrame('start_point') \
-        .setShape(ry.ST.sphere, size=[.01]) \
-        .setPosition([0, .0, .0]) \
-        .setColor([0, 0, 1])
-    
-    C.addFrame('end_point') \
-        .setShape(ry.ST.sphere, size=[.01]) \
-        .setPosition([0, .0, .0]) \
-        .setColor([0, 0 , 1])
+    for i in range(6):
+        C.addFrame(f'way{i}') \
+            .setShape(ry.ST.sphere, size=[.01]) \
+            .setPosition([0, .0, .0]) \
+            .setColor([0, 0, 1])
     
     return C
 

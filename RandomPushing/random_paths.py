@@ -10,16 +10,16 @@ def push_problem(C):
     # define a 2 waypoint problem in KOMO   
     komo = ry.KOMO()
     komo.setConfig(C, True)
-    komo.setTiming(2., 1, 1., 0)
+    komo.setTiming(7, 1, 1., 2)
 
     komo.addControlObjective([], 0, 1e-2)
-    #komo.addControlObjective([], 1, 1e1)
+    komo.addControlObjective([], 1, 1e1)
 
     komo.addObjective([], ry.FS.accumulatedCollisions, [], ry.OT.eq)
     komo.addObjective([], ry.FS.jointLimits, [], ry.OT.ineq)
    
-    komo.addObjective([1.], ry.FS.poseDiff, ['l_gripper', 'start_point'], ry.OT.eq, [1e1])
-    komo.addObjective([2.], ry.FS.poseDiff, ['l_gripper', 'end_point'], ry.OT.eq, [1e1])
+    for i in range(6):
+        komo.addObjective([i+2], ry.FS.poseDiff, ['l_gripper', f'way{i}'], ry.OT.eq, [1e1])
 
     return komo
 
