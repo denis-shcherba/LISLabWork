@@ -2,23 +2,18 @@ import numpy as np
 from robotic import ry
 from utils.quadratic_solver import line_circle_intersection, line_rect_intersection
 from visual import plotLine
-from random_paths import segment_line
 
 class Arena:
-    def __init__(self, C, middleP=np.array([0, 0]), width=None, height=None):
-        self.C=C
+    def __init__(self, middleP=np.array([0, 0])):
         self.middleP = middleP
-        self.width = width
-        self.height = height
 
     def area(self):
         return self.width * self.height
 
-
 #circular Arena with inner and outer circle
 class CircularArena(Arena):
-    def __init__(self, C, middleP, outerR, innerR=None):
-        super().__init__(C, middleP)
+    def __init__(self, middleP, outerR, innerR=None):
+        super().__init__(middleP)
         self.outerR = outerR
         self.innerR = innerR
 
@@ -27,7 +22,8 @@ class CircularArena(Arena):
         if self.innerR:
             inner_area = np.pi * self.innerR ** 2
         return outer_area - inner_area
-    def plotArena(self, resolution=48):
+    
+    def plotArena(self, ry_config, resolution=48):
         '''
         Visualises the pushing area.
         Returns:
@@ -41,64 +37,70 @@ class CircularArena(Arena):
 
             if self.innerR:
                 inner_point = self.middleP + self.innerR*dir_vec
-                self.C.addFrame(f'inner_arena_{i}') \
+                ry_config.addFrame(f'inner_arena_{i}') \
                     .setPosition(inner_point) \
                     .setShape(ry.ST.sphere, size=[.02]) \
                     .setColor([1, 0, 0])
             
-            self.C.addFrame(f'outer_arena_{i}') \
+            ry_config.addFrame(f'outer_arena_{i}') \
                 .setPosition(outer_point) \
                 .setShape(ry.ST.sphere, size=[.02]) \
                 .setColor([1, 0, 0])
-    def generate_waypoints(self, C, obj_pos, obj_width, robot_pos=np.array([0, 0]), start_distance=.07, waypoints=None):
+            
+    def generate_waypoints(self, obj_pos, obj_width=0, start_distance=.07, ry_config=None):
+        '''
+        Steers or moves towards target objects within a given constraint i.e., step size.
 
-        success = False
-        try:
-            z = obj_pos[2]
-        except:
-            z = 0
-        obj_pos = np.array((obj_pos[0], obj_pos[1]))
-        robot_pos = np.array((robot_pos[0], robot_pos[1]))
-
-        rob2obj_len = np.linalg.norm(obj_pos-robot_pos)
+        Args:
+            obj_pos: Position of object in arena 
+            obj_width: Width of the object
+            start_distance: The distance of the starting waypoint to the object (default: 7cm)
+            ry_config: Configuration of the rai simulation (only to plot the path/waypoints generated)
         
-        if self.innerR:
-            if rob2obj_len < self.innerR or rob2obj_len >= self.outerR:
-                print("Object is outside of arena!")
-                return None, None, None, None, success
-        else:
-            if rob2obj_len >= self.outerR:
-                print("Object is outside of arena!")
-                return None, None, None, None, success
-        angle = np.random.random() * np.pi*2
+        Returns:
+            Starting waypoint for push,
+            Ending waypoint for push,
+            Intersection with arena,
+            Intersection with arena,
+            Path generation success status
+        '''
 
+        # Check if object is inside the arena
+        rob2obj_len = np.linalg.norm(obj_pos-self.middleP)
+        if rob2obj_len >= self.outerR or (self.innerR and rob2obj_len < self.innerR):
+            print("Object is outside of arena!")
+            return None, None, None, None, False
+        
+        # Generate a random direction vector for the push
+        angle = np.random.random() * np.pi*2
         move_vec = np.array([np.cos(angle), np.sin(angle)])
 
-        # obj_pos=posvector, move_vec= directions_vector, robot_pos = circle offset
-        inner_points = line_circle_intersection(obj_pos, move_vec, robot_pos, self.innerR) if self.innerR else []
-        outer_points = line_circle_intersection(obj_pos, move_vec, robot_pos, self.outerR)
+        # Calculate intersections with inner/outer circle
+        inner_points = line_circle_intersection(obj_pos, move_vec, self.middleP, self.innerR) if self.innerR else []
+        outer_points = line_circle_intersection(obj_pos, move_vec, self.middleP, self.outerR)
 
+        # The intersection fuctions remove the z value of vector, so we nee to put it back
+        try: z = obj_pos[2]
+        except: z = 0
+        inner_points = [np.array([i[0], i[1], z]) for i in inner_points]
+        outer_points = [np.array([i[0], i[1], z]) for i in outer_points]
+
+        # Select relevant intersection points
         if inner_points:
-            if np.linalg.norm(outer_points[1]-obj_pos) > np.linalg.norm(outer_points[0]-obj_pos):
-                outer_inter = outer_points[0]
-            else:
-                outer_inter = outer_points[1]
-            
-            if len(inner_points) > 1:
-                if np.linalg.norm(inner_points[1]-obj_pos) > np.linalg.norm(inner_points[0]-obj_pos):
-                    point0 = inner_points[0]
-                else:
-                    point0 = inner_points[1]
-            else:
+            if len(inner_points) <= 1 or (len(inner_points) > 1 and np.linalg.norm(inner_points[1]-obj_pos) > np.linalg.norm(inner_points[0]-obj_pos)):
                 point0 = inner_points[0]
-            point1 = outer_inter
+            else:
+                point0 = inner_points[1]
+
+            if np.linalg.norm(outer_points[1]-obj_pos) > np.linalg.norm(outer_points[0]-obj_pos):
+                point1 = outer_points[0]
+            else:
+                point1 = outer_points[1]
         else:
             point0 = outer_points[0]
             point1 = outer_points[1]
-        
-        if C:
-            plotLine(C, np.array([point0[0], point0[1], .651]), np.array([point1[0], point1[1], .651]))
-
+    
+        # Pick a random orientation for the vector
         if np.random.choice([0, 1]):
             start_vec = point0-obj_pos
             end_vec = point1-obj_pos
@@ -114,40 +116,32 @@ class CircularArena(Arena):
         end_vec *= np.random.random()
         end_point = obj_pos + end_vec
 
-        end3d = np.array([end_point[0], end_point[1], z])
-        start3d = np.array([start_point[0], start_point[1], z])
-        if C:
-            if waypoints:
-                points = segment_line(start3d, end3d, waypoints)
-                for i, p in enumerate(points):
-                    way = C.getFrame(f'way{i}')
-                    way.setPosition(p)
-            else:
-                way0 = C.getFrame('start_point')
-                # t: position relative to cylinder , d: degrees arm rotation, d:degrees gripper rotation
-                way0.setPosition(point0)
+        # Display the path in the rai simulation
+        if ry_config:
+            plotLine(ry_config, np.array([point0[0], point0[1], .651]), np.array([point1[0], point1[1], .651]))
+            
+            way0 = ry_config.getFrame('start_point')
+            way0.setPosition(point0)
+            way1 = ry_config.getFrame('end_point')
+            way1.setPosition(point1)
 
-                way1 = C.getFrame('end_point')
-                way1.setPosition(point1)
-
-        success = True
-        return start3d, end3d, point0, point1, success       
+        return start_point, end_point, point0, point1, True    
 
 
 class RectangularArena(Arena):
-    def __init__(self, C, middleP, width, height, innerR=None, middlePCirc=None):
-        super().__init__(C, middleP, width, height)
+    
+    def __init__(self, middleP, width, height, innerR=None, middlePCirc=[]):
+        super().__init__(middleP)
+        self.width = width
+        self.height = height
         self.innerR = innerR
-        if len(middlePCirc):
-            self.middlePCirc=middlePCirc
-        else:
-            self.middlePCirc = middleP
+        self.middlePCirc = middlePCirc if len(middlePCirc) else middleP
+
     def area(self):
         return self.width * self.height
-    
 
     #TODO Implement plotArena for rectArena
-    def plotArena(self, resolution=48):
+    def plotArena(self, ry_config, resolution=48):
         '''
         Visualises the pushing area.
         Returns:
@@ -156,7 +150,6 @@ class RectangularArena(Arena):
         step_size = (2*self.height+2*self.width)/resolution  # You can keep the step size consistent for both circular and rectangular arenas
         """following: spaghetti code of doom"""
         step_size2 = 2*np.pi/resolution
-
         
         for i in range(resolution):
             angle = step_size * i
@@ -175,7 +168,7 @@ class RectangularArena(Arena):
 
             if self.innerR:
                 inner_point = self.middlePCirc + self.innerR * dir_vec_circ
-                self.C.addFrame(f'inner_arena_{i}') \
+                ry_config.addFrame(f'inner_arena_{i}') \
                     .setPosition(inner_point) \
                     .setShape(ry.ST.sphere, size=[.02]) \
                     .setColor([1, 0, 0])
@@ -183,59 +176,68 @@ class RectangularArena(Arena):
             dir_vec_rect = np.array([np.cos(angle), np.sin(angle), 0])  # Direction vector for rectangular arena
             #outer_point = self.middleP + np.array([self.width, self.height, 0]) * dir_vec_rect
 
-            self.C.addFrame(f'outer_arena_{i}') \
+            ry_config.addFrame(f'outer_arena_{i}') \
                 .setPosition(outer_point) \
                 .setShape(ry.ST.sphere, size=[.02]) \
                 .setColor([1, 0, 0])
-    def generate_waypoints(self, C, obj_pos, obj_width, start_distance=.07, waypoints=None):
+    
+    def point_in_rect(self, point):
+        return point[0] > self.middleP[0]+.5*self.width or point[0] < self.middleP[0]-.5*self.width or point[1] > self.middleP[1]+.5*self.height or point[1] < self.middleP[1]-.5*self.height
+            
+    def generate_waypoints(self, obj_pos, obj_width=0, start_distance=.07, ry_config=None):
+        '''
+        Steers or moves towards target objects within a given constraint i.e., step size.
 
-        success = False
-        try:
-            z = obj_pos[2]
-        except:
-            z = 0
-        obj_pos = np.array((obj_pos[0], obj_pos[1]))
-        self.middleP = np.array((self.middleP[0], self.middleP[1]))
-        self.middlePCirc = np.array((self.middlePCirc[0], self.middlePCirc[1]))
-        rob2obj_len = np.linalg.norm(obj_pos-self.middlePCirc)
+        Args:
+            obj_pos: Position of object in arena 
+            obj_width: Width of the object
+            start_distance: The distance of the starting waypoint to the object (default: 7cm)
+            ry_config: Configuration of the rai simulation (only to plot the path/waypoints generated)
         
-        if self.innerR:
-            if rob2obj_len < self.innerR:
-                print("Object is outside of arena!")
-                return None, None, None, None, success
-        else:
-            if obj_pos[0] > self.middleP[0]+1/2*self.width or obj_pos[0] < self.middleP[0]-1/2*self.width or obj_pos[1] > self.middleP[1]+1/2*self.height or obj_pos[1] < self.middleP[1]-1/2*self.height:
-                print("Object is outside of arena!")
-                return None, None, None, None, success
+        Returns:
+            Starting waypoint for push,
+            Ending waypoint for push,
+            Intersection with arena,
+            Intersection with arena,
+            Path generation success status
+        '''
+            
+        # Check if object is inside the arena
+        if self.point_in_rect(obj_pos) or (self.innerR and np.linalg.norm(obj_pos-self.middlePCirc) < self.innerR):
+            print("Object is outside of arena!")
+            return None, None, None, None, False
+        
+        # Generate a random direction vector for the push
         angle = np.random.random() * np.pi*2
-
         move_vec = np.array([np.cos(angle), np.sin(angle)])
 
-        # obj_pos=posvector, move_vec= directions_vector, robot_pos = circle offset
+        # Calculate intersections with inner/outer boundaries
         inner_points = line_circle_intersection(obj_pos, move_vec, self.middlePCirc, self.innerR) if self.innerR else []
         outer_points = line_rect_intersection(obj_pos, move_vec, self.middleP, self.width, self.height)
 
+        # The intersection fuctions remove the z value of vector, so we nee to put it back
+        try: z = obj_pos[2]
+        except: z = None
+        if z != None:
+            inner_points = [np.array([i[0], i[1], z]) for i in inner_points]
+            outer_points = [np.array([i[0], i[1], z]) for i in outer_points]
+
+        # Select relevant intersection points
         if inner_points:
-            if np.linalg.norm(outer_points[1]-obj_pos) > np.linalg.norm(outer_points[0]-obj_pos):
-                outer_inter = outer_points[0]
-            else:
-                outer_inter = outer_points[1]
-            
-            if len(inner_points) > 1:
-                if np.linalg.norm(inner_points[1]-obj_pos) > np.linalg.norm(inner_points[0]-obj_pos):
-                    point0 = inner_points[0]
-                else:
-                    point0 = inner_points[1]
-            else:
+            if len(inner_points) <= 1 or (len(inner_points) > 1 and np.linalg.norm(inner_points[1]-obj_pos) > np.linalg.norm(inner_points[0]-obj_pos)):
                 point0 = inner_points[0]
-            point1 = outer_inter
+            else:
+                point0 = inner_points[1]
+
+            if np.linalg.norm(outer_points[1]-obj_pos) > np.linalg.norm(outer_points[0]-obj_pos):
+                point1 = outer_points[0]
+            else:
+                point1 = outer_points[1]
         else:
             point0 = outer_points[0]
             point1 = outer_points[1]
         
-        if C:
-            plotLine(C, np.array([point0[0], point0[1], .651]), np.array([point1[0], point1[1], .651]))
-
+        # Pick a random orientation for the vector
         if np.random.choice([0, 1]):
             start_vec = point0-obj_pos
             end_vec = point1-obj_pos
@@ -246,32 +248,18 @@ class RectangularArena(Arena):
 
         start_vec /= np.linalg.norm(start_vec)
         start_vec *= start_distance + obj_width
-        start_point = obj_pos + 0.6*start_vec
+        start_point = obj_pos + start_vec
 
-
-        #hier aendern wahrscheinlich,sollte dafuer sorgen, dass er nicht an arenarand geht TODO
-        #end_vec-=np.linalg.norm(end_vec)*obj_width*end_vec
-       
         end_vec *= np.random.random()
         end_point = obj_pos + end_vec
 
-        #blaue waypoints hier TODO
-        end3d = np.array([end_point[0], end_point[1], z])
-        start3d = np.array([start_point[0], start_point[1], z])
-        if C:
-            if waypoints:
-                points = segment_line(start3d, end3d, waypoints)
-                for i, p in enumerate(points):
-                    way = C.getFrame(f'way{i}')
-                    way.setPosition(p)
-            else:
-                way0 = C.getFrame('start_point')
-                # t: position relative to cylinder , d: degrees arm rotation, d:degrees gripper rotation
-                way0.setPosition(point0)
+        # Display the path in the rai simulation
+        if ry_config:
+            plotLine(ry_config, np.array([point0[0], point0[1], .651]), np.array([point1[0], point1[1], .651]))
+            
+            way0 = ry_config.getFrame('start_point')
+            way0.setPosition(point0)
+            way1 = ry_config.getFrame('end_point')
+            way1.setPosition(point1)
 
-                way1 = C.getFrame('end_point')
-                way1.setPosition(point1)
-
-        success = True
-        return start3d, end3d, point0, point1, success
-
+        return start_point, end_point, point0, point1, True
