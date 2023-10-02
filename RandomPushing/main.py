@@ -80,5 +80,4 @@ if __name__ == "__main__":
             })
 
     bot.home(C)
-    with open('data/data.json', 'w') as f:
-        json.dump(data, f)
+    json.dump(data, open('data/data.json', 'w'))

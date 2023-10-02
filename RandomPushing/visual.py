@@ -1,6 +1,7 @@
 from robotic import ry
 import numpy as np
 from utils.ransac import point_above_plane, get_plane_from_points
+import json
 
 def getFilteredPointCloud(bot, ry_config, arena, z_cutoff=.67):
     bot.sync(ry_config, .0)
@@ -191,20 +192,20 @@ def scanObject(bot, ry_config, obj_pos, arena, gripper_height=.3, gripper_distan
             gripper_distance * np.sin(angle),
             gripper_distance * np.cos(angle),
             gripper_height
-        ]) + obj_pos
+        ])
 
-        ry_config.getFrame(f'view_point_{i}').setPosition(new_view)
+        ry_config.getFrame(f'view_point_{i}').setPosition(new_view+obj_pos)
         bot.sync(ry_config)
 
         komo = ry.KOMO()
         komo.setConfig(ry_config, True)
-        komo.setTiming(2, 1, 1., 2)
+        komo.setTiming(1., 1, 1., 0)
 
         komo.addObjective([], ry.FS.accumulatedCollisions, [], ry.OT.eq)
         komo.addObjective([], ry.FS.jointLimits, [], ry.OT.ineq)
 
-        komo.addObjective([2], ry.FS.position, ['l_gripper'], ry.OT.eq, new_view)
-        komo.addObjective([2], ry.FS.vectorZ, ["l_gripper"], ry.OT.eq, obj_pos-new_view)
+        komo.addObjective([1.], ry.FS.positionDiff, ['l_gripper', f'view_point_{i}'], ry.OT.eq, [1e1])
+        komo.addObjective([1.], ry.FS.positionRel, ["predicted_obj", "cameraWrist"], ry.OT.eq, [1.], [.0, .0, -.3])
 
         ret = ry.NLP_Solver().setProblem(komo.nlp()).setOptions(stopTolerance=1e-2, verbose=0).solve()
         print(ret)
@@ -213,6 +214,7 @@ def scanObject(bot, ry_config, obj_pos, arena, gripper_height=.3, gripper_distan
             bot.sync(ry_config, .1)
 
         points, _ = getFilteredPointCloud(bot, ry_config, arena)
-        all_points.append(points)
-    
+        all_points.append([list(p) for p in points])
+
+    json.dump(all_points, open("data/scanned_obj.json", "w"))
     return all_points
