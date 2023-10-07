@@ -1,1 +1,1 @@
-# Learning and Intelligent Systems Official SHK repository
+# Learning and Intelligent Systems Lab Official SHK repository
