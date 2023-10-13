@@ -7,9 +7,9 @@ def setup_config(obj_pos=[-.50, .1, .69], on_real=False, debug=False):
     #ry.params_add({'botsim/engine': 'kinematic'})
     C.addFile(ry.raiPath('../rai-robotModels/scenarios/pandaSingle.g'))
 
-    f = C.addFrame("camera", "l_gripper")
-    f.setShape(ry.ST.camera, [.1])
-    f.addAttributes({'focalLength':0.895, 'width':640., 'height':360.})
+    # f = C.addFrame("camera", "l_gripper")
+    # f.setShape(ry.ST.camera, [.1])
+    # f.addAttributes({'focalLength':0.895, 'width':640., 'height':360.})
 
     if debug:
         C.addFrame("z-limit") \
@@ -24,7 +24,7 @@ def setup_config(obj_pos=[-.50, .1, .69], on_real=False, debug=False):
             .setColor([1, .5, 0]) .setMass(.1) .setContact(True)
     
     C.addFrame('predicted_obj') \
-        .setShape(ry.ST.marker, size=[.01]) \
+        .setShape(ry.ST.marker, size=[.1]) \
         .setPosition(obj_pos) \
         .setColor([1, 0, 0])
 
@@ -48,7 +48,7 @@ def startup_robot(C, on_real):
     bot = ry.BotOp(C, on_real)
     bot.home(C)
 
-    bot.gripperClose(ry._left)
+    bot.gripperMove(ry._left, .01, .4)
     while not bot.gripperDone(ry._left):
         bot.sync(C, .1)
     return bot

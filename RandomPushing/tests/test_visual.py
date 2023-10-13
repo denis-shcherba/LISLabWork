@@ -3,7 +3,7 @@ import json
 import numpy as np
 from config import setup_config, startup_robot
 from random_paths import generate_waypointsv2, compute_motion, run_waypoints_one_by_one
-from visual import getObject, point2obj, plotArena
+from visual import getObject, lookAtObj, plotArena
 
 WAYPOINTS = 6
 INITIAL_OBJ_POS = [-.5, 0, .69]
@@ -39,6 +39,6 @@ if __name__ == "__main__":
 
     # first input to plotArena hardcodes radius pos x,y,z
     plotArena(robot_pos, INR, OTR, C)
-    point2obj(bot, C, np.array(obj_pos))
+    lookAtObj(bot, C, np.array(obj_pos))
     while True:
         obj_pos  = getObject(bot, INR, OTR, robot_pos, C) 

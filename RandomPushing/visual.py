@@ -103,11 +103,11 @@ def getObject(bot, ry_config, arena, use_ransac=False):
     
     return midpoint.tolist()
 
-def point2obj(bot, ry_config, objpos):
+def lookAtObj(bot, ry_config, objpos):
     ry_config.getFrame("predicted_obj").setPosition(objpos)
     q_now = ry_config.getJointState()
 
-    bot.home(ry_config)
+    # bot.home(ry_config)
     q_home = bot.get_qHome()
 
     komo = ry.KOMO()
@@ -117,7 +117,7 @@ def point2obj(bot, ry_config, objpos):
     komo.addObjective([], ry.FS.jointLimits, [], ry.OT.ineq)
 
     # Should be predicted obj instead of obj
-    komo.addObjective([1.], ry.FS.positionRel, ["predicted_obj", "cameraWrist"], ry.OT.eq, [1.], [.0, .0, -.3])
+    komo.addObjective([1.], ry.FS.positionRel, ["predicted_obj", "cameraWrist"], ry.OT.eq, [1.], [.0, .0, .5])
     komo.addObjective([1.], ry.FS.position, ["l_gripper"], ry.OT.ineq, np.array([[.0, .0, -100.]]), [0, 0, .8])
     komo.addObjective([], ry.FS.qItself, [], ry.OT.sos, [.1], q_home)
     komo.addObjective([], ry.FS.qItself, [], ry.OT.sos, [.1], q_now)

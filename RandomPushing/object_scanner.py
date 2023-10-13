@@ -1,7 +1,7 @@
 from robotic import ry
 import numpy as np
 from config import setup_config, startup_robot
-from visual import getObject, point2obj, scanObject
+from visual import getObject, lookAtObj, scanObject
 from arena import *
 from time import sleep
 
@@ -38,7 +38,7 @@ if __name__ == "__main__":
     arena.plotArena(C)
 
     # Point towards set initial object position
-    point2obj(bot, C, np.array(obj_pos))
+    lookAtObj(bot, C, np.array(obj_pos))
 
     # Capture midpoint from point cloud
     obj_pos  = getObject(bot, C, arena)

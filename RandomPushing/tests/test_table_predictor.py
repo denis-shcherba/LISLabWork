@@ -1,7 +1,7 @@
 from robotic import ry
 import numpy as np
 from config import setup_config, startup_robot
-from visual import point2obj, getFilteredPointCloud, getObject
+from visual import lookAtObj, getFilteredPointCloud, getObject
 from utils import get_plane_from_points, point_above_plane
 
 WAYPOINTS = 6
@@ -39,7 +39,7 @@ if __name__ == "__main__":
     # first input to plotArena hardcodes radius pos x,y,z
     # plotArena(robot_pos, INR, OTR, C)
 
-    point2obj(bot, C, np.array(obj_pos))
+    lookAtObj(bot, C, np.array(obj_pos))
     # getObj returns middlepoint or objpos, but no dist atm
 
     getObject(bot, INR, OTR, robot_pos, C)

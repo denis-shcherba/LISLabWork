@@ -3,7 +3,7 @@ import json
 import numpy as np
 from config import setup_config, startup_robot
 from random_paths import compute_motion, run_waypoints_one_by_one
-from visual import getObject, point2obj
+from visual import getObject, lookAtObj
 from arena import RectangularArena
 
 
@@ -53,7 +53,7 @@ if __name__ == "__main__":
     Arena = RectangularArena(C=C, middleP=RECT_ARENA_MIDDLEP, height=RECT_HEIGHT,  width=RECT_WIDTH, innerR=INR, middlePCirc=robot_pos)
     Arena.plotArena()
 
-    point2obj(bot, C, np.array(obj_pos))
+    lookAtObj(bot, C, np.array(obj_pos))
     # getObj returns middlepoint or objpos, but no dist atm
     obj_pos  = getObject(bot, C, RECT_ARENA_MIDDLEP, INR, OTR, use_ransac=USE_RANSAC, width=RECT_WIDTH, height=RECT_HEIGHT) 
     if obj_pos:
@@ -93,7 +93,7 @@ if __name__ == "__main__":
                     non_f += 1
                     continue
                         
-                point2obj(bot, C, np.array(obj_pos))
+                lookAtObj(bot, C, np.array(obj_pos))
                 obj_pos = getObject(bot, C, RECT_ARENA_MIDDLEP, inner_rad=INR, outer_rad=OTR, use_ransac=USE_RANSAC, width=RECT_WIDTH, height=RECT_HEIGHT)
                 
                 d["way_pos"]["end"] = [i for i in way_end]

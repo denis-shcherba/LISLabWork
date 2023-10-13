@@ -3,7 +3,7 @@ import json
 import numpy as np
 from config import setup_config, startup_robot
 from random_paths import compute_motion, run_waypoints_one_by_one
-from visual import getObject, point2obj
+from visual import getObject, lookAtObj
 from arena import *
 
 
@@ -12,6 +12,7 @@ DEBUG = False
 OBJ_HEIGHT = .08
 
 ON_REAL = False
+
 
 robot_pos = np.array([-.54, -.17, .651])
 
@@ -35,26 +36,26 @@ if __name__ == "__main__":
     obj_pos = INITIAL_OBJ_POS
 
     # Generate Arena
-    arena = RectangularArena(middleP=robot_pos, innerR=.1, width=0.7, height=0.8)
+    arena = RectangularArena(middleP=robot_pos, width=0.4, height=0.8)
     arena.plotArena(C)
 
     # Point towards set initial object position
-    point2obj(bot, C, np.array(obj_pos))
+    lookAtObj(bot, C, np.array(obj_pos))
 
     # Capture midpoint from point cloud
     obj_pos  = getObject(bot, C, arena)
     
-    for i in range(3):
+    for i in range(20):
 
         if not obj_pos: break
 
-        bot.home(C)
+        # bot.home(C)
 
         #-- compute a motion (debug this inside the method)
-        way_start, way_end, _, _, success = arena.generate_waypoints(obj_pos, obj_width=.3, ry_config=C)
+        way_start, way_end, pred_point, delta, success = arena.generate_waypoints(obj_pos, obj_width=.3, ry_config=C)
 
         if not success: break
-        path, feasible = compute_motion(C, verbose)
+        path, feasible = compute_motion(C, delta, verbose)
         print('returned path shape: ', type(path), path.shape)
 
         #-- now, if we're happy with the motion, send it to the robot
@@ -63,8 +64,10 @@ if __name__ == "__main__":
 
             # Move object
             run_waypoints_one_by_one(bot, path, True, C)
+
             # Check new object position
-            point2obj(bot, C, np.array(obj_pos))
+            lookAtObj(bot, C, np.array(pred_point))
+
             obj_pos = getObject(bot, C, arena)
             
             # Store information
