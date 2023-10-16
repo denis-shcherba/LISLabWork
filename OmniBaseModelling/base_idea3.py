@@ -85,8 +85,6 @@ def basic_geometry():
                                         cube([rcl, 2, 4], center=True)))))
         shapes.append(radial_support)
 
-        print(rot)
-
         wheel_side_support_l = union()(
                                     color("Blue")(
                                         translate(dir_vector*(ctiw+hpw)+rotate_vec(np.array([-wsl*.5+hpw, wheel_gap*.5, 0.]), rot))(
@@ -109,12 +107,14 @@ def basic_geometry():
                                         cube([boll, 2, 4], center=True)))))
         shapes.append(big_outer_line)
 
-    print(f"Red:     {wsl:.1f} cm")
-    print(f"Orange:  {wsl:.1f} cm")
-    print(f"Yellow:  {cil:.1f} cm - angle cut")
-    print(f"Green:   {rcl:.1f} cm")
-    print(f"Blue:     {wssl:.1f} cm")
-    print(f"Purple:  {boll:.1f} cm")
+    print(f"Red:         {wsl:.1f} cm")
+    print(f"Orange:      {wsl:.1f} cm")
+    print(f"Yellow:      {cil:.1f} cm - angle cut")
+    print(f"Green:       {rcl:.1f} cm")
+    print(f"Blue:         {wssl:.1f} cm")
+    print(f"Purple:      {boll:.1f} cm")
+    print("--------------------------")
+    print(f"Diameter:   {(np.linalg.norm(np.array([wsl*.5, ctow]))*2):.1f} cm")
 
     return union()(*shapes)
 
