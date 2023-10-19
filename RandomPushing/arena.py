@@ -10,7 +10,13 @@ class Arena:
 
     def area(self):
         return self.width * self.height
-
+    
+    def point_in_inner_circ(self, point, circlecent, rad=0):
+        if rad==0:
+            return False
+        if point[0] <= circlecent[0]+rad and point[0] >= circlecent[0]-rad and point[1] <= circlecent[1]+rad and point[1] >= circlecent[1]-rad:
+            return True
+        return False
 #circular Arena with inner and outer circle
 class CircularArena(Arena):
     def __init__(self, middleP, outerR, innerR=None):
@@ -186,8 +192,9 @@ class RectangularArena(Arena):
     
     def point_in_rect(self, point):
         return point[0] > self.middleP[0]+.5*self.width or point[0] < self.middleP[0]-.5*self.width or point[1] > self.middleP[1]+.5*self.height or point[1] < self.middleP[1]-.5*self.height
-            
-    def generate_waypoints(self, obj_pos, obj_width=0, start_distance=.12, ry_config=None, mode=1):
+    
+    
+    def generate_waypoints(self, obj_pos, obj_width=0, start_distance=.15, ry_config=None, mode=1):
         '''
         Args:
             obj_pos: Position of object in arena 
@@ -259,8 +266,14 @@ class RectangularArena(Arena):
             end_vec *= np.random.random()
             end_point = obj_pos + end_vec
         else:
+            #sample random point in rect arena
             end_point = (np.random.rand(3)-.5)*np.array([self.width, self.height,0])+self.middleP
+            while(self.point_in_inner_circ(point=end_point, circlecent=self.middlePCirc, rad=self.innerR)):
+                end_point = (np.random.rand(3)-.5)*np.array([self.width, self.height,0])+self.middleP
 
+            
+
+            # set z coord of point to obj_pos
             end_point[2] = obj_pos[2]
 
             pred_point = end_point.copy()

@@ -118,7 +118,7 @@ def lookAtObj(bot, ry_config, objpos):
 
     # Should be predicted obj instead of obj
     komo.addObjective([1.], ry.FS.positionRel, ["predicted_obj", "cameraWrist"], ry.OT.eq, [1.], [.0, .0, .5])
-    komo.addObjective([1.], ry.FS.position, ["l_gripper"], ry.OT.ineq, np.array([[.0, .0, -100.]]), [0, 0, .8])
+    komo.addObjective([1.], ry.FS.position, ["l_gripper"], ry.OT.ineq, np.array([[.0, .0, -100.]]), [0, 0, .95])
     komo.addObjective([], ry.FS.qItself, [], ry.OT.sos, [.1], q_home)
     komo.addObjective([], ry.FS.qItself, [], ry.OT.sos, [.1], q_now)
 

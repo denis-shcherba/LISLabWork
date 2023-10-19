@@ -11,10 +11,15 @@ INITIAL_OBJ_POS = [-.5, 0, .69]
 DEBUG = False
 OBJ_HEIGHT = .08
 
-ON_REAL = False
+ON_REAL = True
+table_width=.89
+table_height=.55
+table_middle=np.array([-.23, -.16, .651])
+
+innerR= .29
+robot_pos = np.array([-.03, -.24, .651])
 
 
-robot_pos = np.array([-.54, -.17, .651])
 
 if __name__ == "__main__":
 
@@ -36,7 +41,7 @@ if __name__ == "__main__":
     obj_pos = INITIAL_OBJ_POS
 
     # Generate Arena
-    arena = RectangularArena(middleP=robot_pos, width=0.4, height=0.8)
+    arena = RectangularArena(middleP=table_middle, width=table_width, height=table_height, middlePCirc=robot_pos, innerR=innerR)
     arena.plotArena(C)
 
     # Point towards set initial object position
@@ -45,7 +50,7 @@ if __name__ == "__main__":
     # Capture midpoint from point cloud
     obj_pos  = getObject(bot, C, arena)
     
-    for i in range(20):
+    for i in range(100):
 
         if not obj_pos: break
 
