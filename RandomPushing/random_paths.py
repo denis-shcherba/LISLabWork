@@ -29,7 +29,6 @@ def push_problem(C, delta):
     komo.addObjective([], ry.FS.accumulatedCollisions, [], ry.OT.eq)
     komo.addObjective([], ry.FS.jointLimits, [], ry.OT.ineq)
 
-
     komo.addObjective([0,1], ry.FS.negDistance, ['l_gripper', 'mid_point'], ry.OT.ineq, [1], [-.1])
     komo.addObjective([1], ry.FS.positionDiff, ['l_gripper', f'way{0}'], ry.OT.eq, [1e1])
     komo.addObjective([1,2], ry.FS.positionDiff, ['l_gripper', f'way{0}'], ry.OT.eq, (np.eye(3)-np.outer(delta,delta)))
@@ -39,12 +38,8 @@ def push_problem(C, delta):
     #komo.addObjective([1], ry.FS.qItself, [], ry.OT.eq, [1e1], [], 1)   #no motion 
     komo.addObjective([2], ry.FS.qItself, [], ry.OT.eq, [1e1], [], 1)   #no motion 
 
-
-   
     komo.addObjective([1, 2], ry.FS.vectorX, ['l_gripper'], ry.OT.eq, delta.reshape(1,3))
     komo.addObjective([1,2], ry.FS.vectorZ, ['l_gripper'], ry.OT.eq, [1], [0,0,1])
-
-
     
     #for i in range(6):
     #    komo.addObjective([i+1+stepsBefore1stWaypoint], ry.FS.positionDiff, ['l_gripper', f'way{i}'], ry.OT.eq, [1e1])
