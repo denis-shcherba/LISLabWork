@@ -5,7 +5,7 @@ def setup_config(obj_pos=[-.50, .1, .69], on_real=False, debug=False):
 
     C = ry.Config()
     #ry.params_add({'botsim/engine': 'kinematic'})
-    C.addFile(ry.raiPath('../rai-robotModels/scenarios/pandaSingle.g'))
+    C.addFile(ry.raiPath('scenarios/pandaSingle.g'))
 
     # f = C.addFrame("camera", "l_gripper")
     # f.setShape(ry.ST.camera, [.1])

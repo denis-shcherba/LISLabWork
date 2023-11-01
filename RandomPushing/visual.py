@@ -3,7 +3,7 @@ import numpy as np
 from utils.ransac import point_above_plane, get_plane_from_points
 import json
 
-def getFilteredPointCloud(bot, ry_config, arena, z_cutoff=.67):
+def getFilteredPointCloud(bot, ry_config, arena, z_cutoff=.68):
     bot.sync(ry_config, .0)
     rgb, depth, points = bot.getImageDepthPcl('cameraWrist', False)
 
@@ -104,6 +104,8 @@ def getObject(bot, ry_config, arena, use_ransac=False):
     return midpoint.tolist()
 
 def lookAtObj(bot, ry_config, objpos):
+    
+    
     ry_config.getFrame("predicted_obj").setPosition(objpos)
     q_now = ry_config.getJointState()
 
@@ -131,7 +133,13 @@ def lookAtObj(bot, ry_config, objpos):
         
     bot.moveTo(komo.getPath()[0], 1., False)
     while bot.getTimeToEnd() > 0:
-        bot.sync(ry_config, .1)
+        key=bot.sync(ry_config, .1)
+        if chr(key) == "q":
+            print("Terminated (visual)")
+            bot.home(ry_config)
+            del bot
+            del ry_config
+            exit()
 
 def plotArena(middleP, innerR, outerR, C, resolution=48):
     '''
@@ -182,7 +190,7 @@ def plotLine(ry_config, start, end, resolution=10):
         else:
             frame.setPosition(position)
 
-def scanObject(bot, ry_config, obj_pos, arena, gripper_height=.3, gripper_distance=.2):
+def scanObject(bot, ry_config, obj_pos, arena, gripper_height=.2, gripper_distance=.2):
 
     all_points = []
     angle_step = 2*np.pi/8
@@ -205,7 +213,7 @@ def scanObject(bot, ry_config, obj_pos, arena, gripper_height=.3, gripper_distan
         komo.addObjective([], ry.FS.jointLimits, [], ry.OT.ineq)
 
         komo.addObjective([1.], ry.FS.positionDiff, ['l_gripper', f'view_point_{i}'], ry.OT.eq, [1e1])
-        komo.addObjective([1.], ry.FS.positionRel, ["predicted_obj", "cameraWrist"], ry.OT.eq, [1.], [.0, .0, -.3])
+        komo.addObjective([1.], ry.FS.positionRel, ["predicted_obj", "cameraWrist"], ry.OT.eq, [1.], [.0, .0, .25])
 
         ret = ry.NLP_Solver().setProblem(komo.nlp()).setOptions(stopTolerance=1e-2, verbose=0).solve()
         print(ret)
@@ -215,8 +223,12 @@ def scanObject(bot, ry_config, obj_pos, arena, gripper_height=.3, gripper_distan
 
         points, _ = getFilteredPointCloud(bot, ry_config, arena)
         all_points.append([list(p) for p in points])
+        getObject(bot, ry_config, arena)
+        ry_config.view(True)
 
+        
     json.dump(all_points, open("data/scanned_obj.json", "w"))
+    
     return all_points
 
 def voxelGridDownsampling(original_pc, voxel_space_dimensions=[10, 10, 10]):

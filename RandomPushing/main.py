@@ -12,6 +12,7 @@ DEBUG = False
 OBJ_HEIGHT = .08
 
 ON_REAL = True
+NUMBER_ITERATIONS=100
 table_width=.89
 table_height=.55
 table_middle=np.array([-.23, -.16, .651])
@@ -50,11 +51,13 @@ if __name__ == "__main__":
     # Capture midpoint from point cloud
     obj_pos  = getObject(bot, C, arena)
     
-    for i in range(100):
+    for i in range(NUMBER_ITERATIONS):
 
         if not obj_pos: break
-
-        # bot.home(C)
+        key=bot.sync(C, .1)
+        if chr(key) == "q":
+            print("Terminated (main loop)")
+            break
 
         #-- compute a motion (debug this inside the method)
         way_start, way_end, pred_point, delta, success = arena.generate_waypoints(obj_pos, obj_width=.3, ry_config=C)

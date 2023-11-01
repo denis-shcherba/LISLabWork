@@ -2,7 +2,7 @@ import json
 import matplotlib.pyplot as plt
 import numpy as np
 
-def voxelGridDownsampling(original_pc, voxel_space_dimensions=[10, 10, 10]):
+def voxelGridDownsampling(original_pc, voxel_space_dimensions=[15, 15, 15]):
     sampled_pc = []
     voxels = [
         [[[] for _ in range(voxel_space_dimensions[2])]
@@ -38,7 +38,7 @@ def voxelGridDownsampling(original_pc, voxel_space_dimensions=[10, 10, 10]):
 
     return sampled_pc
 
-point_cloud_data = json.load(open("./data/scanned_obj_points.json"))
+point_cloud_data = json.load(open("../data/all_point_clouds.json"))
 final_pc = voxelGridDownsampling(point_cloud_data)
 
 # Create a 3D scatter plot
