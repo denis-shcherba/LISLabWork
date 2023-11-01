@@ -3,11 +3,8 @@ import numpy as np
 from config import setup_config, startup_robot
 from visual import getObject, lookAtObj, scanObject, PCD
 from arena import *
-from time import sleep
 import json
 import open3d as o3d
-import os 
-import matplotlib.pyplot as plt
 
 INITIAL_OBJ_POS = [-.5, 0, .69]
 DEBUG = False
@@ -73,6 +70,10 @@ if __name__ == "__main__":
 
     final_points = PCD(pcd_files, True)
 
+    pclFrame = C.getFrame("pcl")
+    pclFrame.setPointCloud(np.array(final_points))
+    C.view_recopyMeshes()
+    
     bot.hold()
     bot.home(C)
 
