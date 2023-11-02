@@ -43,7 +43,7 @@ if __name__ == "__main__":
     # Capture midpoint from point cloud
     obj_pos  = getObject(bot, C, arena) 
 
-    scanned_views = scanObject(bot, C, np.array(obj_pos), arena)
+    scanned_views = scanObject(bot, C, np.array(obj_pos), arena, save_as="./data/scanned_views.json")
 
     for i, point_cloud in enumerate(scanned_views):
 
