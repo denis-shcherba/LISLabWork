@@ -1,7 +1,7 @@
-from robotic import ry
+import robotic as ry
 import numpy as np
 from config import setup_config, startup_robot
-from visual import getObject, lookAtObj, scanObject, PCD
+from visual import getObject, lookAtObj, scanObject, point2pointPCR
 from arena import *
 import json
 import open3d as o3d
@@ -68,7 +68,7 @@ if __name__ == "__main__":
 
     pcd_files = [f'point_cloud_{i}.pcd' for i in range(len(scanned_views))]
 
-    final_points = PCD(pcd_files, True)
+    final_points = point2pointPCR(pcd_files, True)
 
     pclFrame = C.getFrame("pcl")
     pclFrame.setPointCloud(np.array(final_points))

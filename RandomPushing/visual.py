@@ -2,7 +2,7 @@ import json
 import numpy as np
 import open3d as o3d
 import matplotlib.pyplot as plt
-from robotic import ry
+import robotic as ry
 from utils.ransac import point_above_plane, get_plane_from_points
 
 
@@ -216,7 +216,7 @@ def scanObject(bot, ry_config, obj_pos, arena, gripper_height=.2, gripper_distan
         komo.addObjective([], ry.FS.jointLimits, [], ry.OT.ineq)
 
         komo.addObjective([1.], ry.FS.positionDiff, ['l_gripper', f'view_point_{i}'], ry.OT.eq, [1e1])
-        komo.addObjective([1.], ry.FS.positionRel, ["predicted_obj", "cameraWrist"], ry.OT.eq, [1.], [.0, .0, .25])
+        komo.addObjective([1.], ry.FS.vectorZ, ["cameraWrist"], ry.OT.eq, [1.], -new_view/np.linalg.norm(new_view))
 
         ret = ry.NLP_Solver().setProblem(komo.nlp()).setOptions(stopTolerance=1e-2, verbose=0).solve()
         print(ret)
@@ -269,7 +269,7 @@ def voxelGridDownsampling(original_pc, voxel_space_dimensions=[10, 10, 10]):
 
     return sampled_pc
 
-def PCD(pcd_files, visualize=False):
+def point2pointPCR(pcd_files, visualize=False):
     
     # Load the first point cloud as the initial reference
     merged_cloud = o3d.io.read_point_cloud("data/"+pcd_files[0])
