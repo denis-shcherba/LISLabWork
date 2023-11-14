@@ -1,0 +1,13 @@
+%% BACKUP/temporary files
+*.tmp
+*.dat
+nogit*
+*~
+z.*
+z/
+MT.log
+.#*#
+.#*
+#*#
+*.stl
+__pycache__
