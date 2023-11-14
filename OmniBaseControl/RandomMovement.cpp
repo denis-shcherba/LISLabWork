@@ -85,7 +85,7 @@ void OmniBase::spinClock(float speed, float seconds) {
   motor2.setPID(300, 0, 200, 100, 2, 0); //low gain... (idk what this does)
   motor2.runSpeed(speed);
   for(uint t=0;t<100;t++) {
-    std:cout << t << " pos:" << M.getMotorPosition() <<" vel:" << M.getMotorSpeed() << std::endl;
+    // std::cout << t << " pos:" << M.getMotorPosition() <<" vel:" << M.getMotorSpeed() << std::endl;
     usleep(seconds*10000);
   }
 }
