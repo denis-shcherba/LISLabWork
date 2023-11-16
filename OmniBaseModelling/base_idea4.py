@@ -14,14 +14,14 @@ radial_vector1 /= np.linalg.norm(radial_vector1)
 side_count = 3
 step_angle = 360/side_count
 step_angle_rad = np.deg2rad(step_angle)
-rad_size = 30 # Length from center to outer wheel
-piece_width = 2 # cm
+rad_size = .3 # Length from center to outer wheel
+piece_width = .02 # cm
 hpw = piece_width*.5
 
-wheel_gap = 9
-ctiw = 35.2 # Center to inner wheel support
+wheel_gap = .09
+ctiw = .352 # Center to inner wheel support
 ctow = ctiw-wheel_gap # Center to outer wheel support
-wsl = 30 # Wheel support length
+wsl = .3 # Wheel support length
 
 p1 = np.array([wsl*.5, ctiw, 0.])
 p2 = np.array([np.sin(step_angle_rad), np.cos(step_angle_rad), 0.]) * ctiw - np.array([np.sin(step_angle_rad+np.pi*.5), np.cos(step_angle_rad+np.pi*.5), 0.]) * wsl*.5
@@ -49,13 +49,13 @@ def basic_geometry():
                                 color("Red")(
                                     translate(dir_vector*(ctow+hpw))(
                                         rotate((0, 0, rot))(
-                                            cube([iiwsl, 2, 4], center=True)))))
+                                            cube([iiwsl, piece_width, piece_width*2], center=True)))))
         shapes.append(outer_wheel_support)
         inner_wheel_support = union()(
                                 color("Orange")(
                                     translate(dir_vector*(ctiw+hpw))(
                                         rotate((0, 0, rot))(
-                                            cube([wsl, 2, 4], center=True)))))
+                                            cube([wsl, piece_width, piece_width*2], center=True)))))
         shapes.append(inner_wheel_support)
 
         dir_vector = np.array([np.sin(i*step_angle_rad+step_angle_rad*.5), np.cos(i*step_angle_rad+step_angle_rad*.5), 0.])
@@ -64,7 +64,7 @@ def basic_geometry():
                             color("Purple")(
                                 translate(dir_vector*(bolr+hpw))(
                                     rotate((0, 0, rot))(
-                                        cube([boll, 2, 4], center=True)))))
+                                        cube([boll, piece_width, piece_width*2], center=True)))))
         shapes.append(big_outer_line)
 
     """
@@ -77,9 +77,9 @@ def basic_geometry():
     print("--------------------------")
     print(f"Diameter:   {(np.linalg.norm(np.array([wsl*.5, ctow]))*2):.1f} cm")
     """
-    print(f"Orange:      {wsl:.1f} cm")
-    print(f"Purple:      {boll:.1f} cm")
-    print(f"Red:         {iiwsl:.1f} cm")
+    print(f"Orange:      {(wsl*100):.1f} cm")
+    print(f"Purple:      {(boll*100):.1f} cm")
+    print(f"Red:         {(iiwsl*100):.1f} cm")
     
     return union()(*shapes)
 
