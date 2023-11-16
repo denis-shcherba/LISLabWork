@@ -1,5 +1,4 @@
-BASE = ../../rai
-BASE2 = ../../rai-contrib
+BASE = ../../../git/rai
 
 PLIB = 1
 DEPEND = Core Gamepad SimplexMotion

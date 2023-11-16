@@ -2,7 +2,7 @@ import json
 import numpy as np
 import open3d as o3d
 import matplotlib.pyplot as plt
-import robotic as ry
+from robotic import ry
 from utils.ransac import point_above_plane, get_plane_from_points
 
 
@@ -40,7 +40,7 @@ def getFilteredPointCloud(bot, ry_config, arena, z_cutoff=.68):
     objectpoints=[]
     colors = []
     for i, p in enumerate(points):
-        if p[2] > z_cutoff and arena.point_in_arena(np.array(p)):
+        if p[2] > (z_cutoff) and arena.point_in_arena(np.array(p)):
             objectpoints.append(p)
             colors.append(rgb[i])
     return objectpoints, colors
@@ -193,11 +193,11 @@ def plotLine(ry_config, start, end, resolution=10):
         else:
             frame.setPosition(position)
 
-def scanObject(bot, ry_config, obj_pos, arena, gripper_height=.2, gripper_distance=.2, save_as=None):
+def scanObject(bot, ry_config, obj_pos, arena, gripper_height=.2, gripper_distance=.2, save_as=None, view_count=16):
 
     all_points = []
-    angle_step = 2*np.pi/8
-    for i in range(8):
+    angle_step = 2*np.pi/view_count
+    for i in range(view_count):
         angle = angle_step * i
         new_view = np.array([
             gripper_distance * np.sin(angle),
@@ -269,23 +269,30 @@ def voxelGridDownsampling(original_pc, voxel_space_dimensions=[10, 10, 10]):
 
     return sampled_pc
 
-def point2pointPCR(pcd_files, visualize=False):
-    
-    # Load the first point cloud as the initial reference
-    merged_cloud = o3d.io.read_point_cloud("data/"+pcd_files[0])
 
-    # Iterate through the remaining point clouds and align/merge
+def point2pointPCR(pcd_files, visualize=False):
+
+    # Load the first point cloud as the initial reference
+    merged_cloud = o3d.io.read_point_cloud("data/" + pcd_files[0])
+
+    # Define the initial transformation matrix as an identity matrix
+    init_transformation = np.identity(4)
+
     for pcd_file in pcd_files[1:]:
         # Load the next point cloud
-        cloud_to_align = o3d.io.read_point_cloud("data/"+pcd_file)
+        cloud_to_align = o3d.io.read_point_cloud("data/" + pcd_file)
 
         # Perform ICP registration
         icp_result = o3d.pipelines.registration.registration_icp(
-            cloud_to_align, merged_cloud, 0.1, np.identity(4), o3d.pipelines.registration.TransformationEstimationPointToPoint())
+            cloud_to_align, merged_cloud, .1, init_transformation,
+            o3d.pipelines.registration.TransformationEstimationPointToPoint(False),
+            o3d.pipelines.registration.ICPConvergenceCriteria(1e-6, 1e-6, 30)
+        )
 
         # Apply the transformation to align the point cloud with the reference
         cloud_to_align.transform(icp_result.transformation)
         print("Transformation:", icp_result.transformation)
+
         # Combine the aligned point cloud with the merged point cloud
         merged_cloud += cloud_to_align
 
@@ -294,9 +301,8 @@ def point2pointPCR(pcd_files, visualize=False):
 
     # Load the PCD file
     point_cloud = o3d.io.read_point_cloud("merged_point_cloud.pcd")
-    # Convert the point cloud data to a NumPy array
-    points = np.asarray(point_cloud.points)
 
+    points = np.asarray(point_cloud.points)
     if visualize:
         # Extract the X, Y, and Z coordinates
         x = points[:, 0]
