@@ -40,12 +40,12 @@ def getVoxelGrid(original_pc, voxel_widths=[.025, .025, .025]):
     return voxels, (min_x, min_y, min_z)
 
 
-def isValidGrip(px, py, pz, voxelGrid, gripShape=[(0, 0, 0), 0, (0, 1, 0), 1, (0, 2, 0), 1, (0, 3, 0), 1, (0, 4, 0), 0]):
+def isValidGrip(px, py, pz, voxelGrid, gripShape=[[[0, 0, 0], 0], [[0, 1, 0], 1]]):
     for box in gripShape:
-        if box[3]:
-            if voxelGrid[px+box[0][0]][py+box[0][1]][pz+box[0][2]] <= 10: return False
+        if box[1]:
+            if len(voxelGrid[px+box[0][0]][py+box[0][1]][pz+box[0][2]]) <= 10: return False
         else:
-            if voxelGrid[px+box[0][0]][py+box[0][1]][pz+box[0][2]] > 10: return False
+            if len(voxelGrid[px+box[0][0]][py+box[0][1]][pz+box[0][2]]) > 10: return False
     return True
 
 def graspFinder(point_cloud, finger_width=.025, max_finger_open=.075, display=False):
@@ -56,8 +56,9 @@ def graspFinder(point_cloud, finger_width=.025, max_finger_open=.075, display=Fa
     for x, plane in enumerate(voxels):
         for y, line in enumerate(plane):
             for z, points in enumerate(line):
-                if y < len(voxels)-5:
+                if y < len(voxels)-4:
                     if isValidGrip(x, y, z, voxels):
+                        gripCoors = []
                         gripCoors.append(x)
                         gripCoors.append(y)
                         gripCoors.append(z)
@@ -82,24 +83,24 @@ def graspFinder(point_cloud, finger_width=.025, max_finger_open=.075, display=Fa
                         voxel.setColor([0., 1., 0., .0])
         
         C0 = ry.Config()
-        pclFrame = C0.addFrame('point_cloud_grasping0')
+        pclFrame = C0.addFrame('point_cloud_grasping')
         pclFrame.setPointCloud(np.array(point_cloud))
         pclFrame.setColor([0.,0.,1.])
         C0.view_recopyMeshes()
 
         print(gripCoors)
 
-        gripShape=[(0, 0, 0), 0, (0, 1, 0), 1, (0, 2, 0), 1, (0, 3, 0), 1, (0, 4, 0), 0]
-        for box in gripShape:
-            voxel = C.addFrame(f"voxel_x{x}y{y}z{z}")
+        gripShape=[[[0, 0, 0], 0], [[0, 1, 0], 1]]
+        for n, box in enumerate(gripShape):
+            voxel = C0.addFrame(f"box_{n}")
             voxel.setShape(ry.ST.ssBox, [finger_width for _ in range(3)]+[.005])
             voxel.setPosition([mins[0] + (gripCoors[0]+box[0][0])*finger_width, mins[1] + (gripCoors[1]+box[0][1])*finger_width, mins[2] + (gripCoors[2]+box[0][2])*finger_width])
-            if box[3]:
+            if box[1]:
                 voxel.setColor([1., 0., 0., .2])
             else:
-                voxel.setColor([0., 1., 0., .0])
+                voxel.setColor([0., 1., 0., .2])
 
-        C.view(True)
+        #C.view(True)
         C0.view(True)
     
     return possibleGrasps
