@@ -19,9 +19,15 @@ GRIPPER_FINGER_WIDTH = .025
         - The normal's plane distance: Trace a line with the direction of one of the
         points normals and check the distance from said point until the line his the
         plane defined by the other point's normal. The distance should be below a
-        threshhold like the gripper finger separation.
+        threshhold like the gripper finger separation. (Temporarly also set a minimum
+        distance for this value)
 
         - Normals should be looking away from eachother.
+
+        - (Temporary until better point normal extraction) Ignore point with a normal
+        that has an angle over 90 degrees in respect to the y axis.
+
+        - Eventually patch contact checking should also be added.
 """
 
 def validSideDistance(p1, p2, n):
@@ -31,15 +37,22 @@ def validSideDistance(p1, p2, n):
     return side_dist <= GRIPPER_FINGER_WIDTH*.5
 
 def validNormalDistance(p1, p2, n, dist_thresh=GRIPPER_FINGER_SEPARATION):
-    return abs(np.dot(p1 - p2, n) / np.linalg.norm(n)) <= dist_thresh
+    return (abs(np.dot(p1 - p2, n) / np.linalg.norm(n)) <= dist_thresh
+            and abs(np.dot(p1 - p2, n) / np.linalg.norm(n)) >= .025)
 
-def validNormalDir(p1, p2, n):
+def validNormalRelativeDir(p1, p2, n):
     p2pvec = p2-p1
     dot_product = np.dot(n, p2pvec)
-    magnitude_vector1 = np.linalg.norm(p1)
-    magnitude_vector2 = np.linalg.norm(p2pvec)
-    cosine_angle = dot_product / (magnitude_vector1 * magnitude_vector2)
+    # Normal vector has magnitude one so we ignore it
+    magnitude_vector = np.linalg.norm(p2pvec)
+    cosine_angle = dot_product / magnitude_vector
     return cosine_angle <= 0
+
+def validNormalDir(n1, n2):
+    upvec = np.array([0., 0., 1.])
+    dot_product1 = np.dot(n1, upvec)
+    dot_product2 = np.dot(n2, upvec)
+    return dot_product1 >= 0 and dot_product2 >= 0
 
 # Find antipodal pairs
 antipodal_pairs = []
@@ -48,10 +61,12 @@ for i in range(len(pcd.points)):
     for j in range(i + 1, len(pcd.points)):
         normal_j = np.asarray(pcd.normals[j])
         dot_product = np.dot(normal_i, normal_j)
-        if (dot_product < -0.99 and
+        if (dot_product < -0.7 and
             validSideDistance(pcd.points[i], pcd.points[j], pcd.normals[i]) and
             validNormalDistance(pcd.points[i], pcd.points[j], pcd.normals[i]) and
-            validNormalDir(pcd.points[i], pcd.points[j], pcd.normals[i])):
+            validNormalRelativeDir(pcd.points[i], pcd.points[j], pcd.normals[i])
+            and validNormalDir(pcd.points[j], pcd.normals[i])
+            ):
                 antipodal_pairs.append((i, j))
 
 print("Antipodal pairs found:", antipodal_pairs)

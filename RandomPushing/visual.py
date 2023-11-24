@@ -2,7 +2,7 @@ import json
 import numpy as np
 import open3d as o3d
 import matplotlib.pyplot as plt
-from robotic import ry
+import robotic as ry
 from utils.ransac import point_above_plane, get_plane_from_points
 
 
@@ -227,7 +227,6 @@ def scanObject(bot, ry_config, obj_pos, arena, gripper_height=.2, gripper_distan
         points, _ = getFilteredPointCloud(bot, ry_config, arena)
         all_points.append([list(p) for p in points])
         getObject(bot, ry_config, arena)
-        ry_config.view(True)
 
     if save_as:
         json.dump(all_points, open(save_as, "w"))
@@ -319,3 +318,43 @@ def point2pointPCR(pcd_files, visualize=False):
 
     return points
 
+def standardICP(source, target):
+    threshold = 0.02
+    iterations = 10
+    trans_init = np.asarray([
+                            [1., 0., 0., 0.],
+                            [0., 1., 0., 0.],
+                            [0., 0., 1., 0.],
+                            [0., 0., 0., 1.]])
+    source, _ = source.remove_statistical_outlier(nb_neighbors=20, std_ratio=2.0)
+    target, _ = target.remove_statistical_outlier(nb_neighbors=20, std_ratio=2.0)
+    source = source.voxel_down_sample(voxel_size=0.001)
+    target = target.voxel_down_sample(voxel_size=0.001)
+    for _ in range(iterations):
+        reg_p2p = o3d.pipelines.registration.registration_icp(
+                source, target, threshold, trans_init,
+                o3d.pipelines.registration.TransformationEstimationPointToPoint())
+        source.transform(reg_p2p.transformation)
+    source += target
+    source = source.voxel_down_sample(voxel_size=0.001)
+    return source
+
+def piece_pci(pcs):
+    while len(pcs) > 1:
+        print("Starting loop...")
+        # Piece Creation
+        new_pcs = []
+        for i in range(0, len(pcs), 2):
+            new_pcs.append(standardICP(pcs[i], pcs[i-1]))
+            new_pcs.append(standardICP(pcs[i], pcs[i+1]))
+
+        pcs = new_pcs
+
+        # Piece Joining
+        new_pcs = []
+        for i in range(0, len(pcs), 2):
+            new_pcs.append(standardICP(pcs[i], pcs[i+1]))
+
+        pcs = new_pcs
+        print("Ending loop...")
+    return pcs[0]

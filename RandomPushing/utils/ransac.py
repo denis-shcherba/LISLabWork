@@ -3,7 +3,7 @@ import numpy as np
 from numpy.random import default_rng
 import scipy.optimize
 import functools
-from robotic import ry
+import robotic as ry
 import random
 
 rng = default_rng()

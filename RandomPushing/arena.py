@@ -1,5 +1,5 @@
 import numpy as np
-from robotic import ry
+import robotic as ry
 from utils.quadratic_solver import line_circle_intersection, line_rect_intersection
 from visual import plotLine
 from random_paths import segment_line
