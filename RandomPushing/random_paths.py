@@ -1,4 +1,4 @@
-from robotic import ry
+import robotic as ry
 import numpy as np
 
 def segment_line(point1, point2, point_between):

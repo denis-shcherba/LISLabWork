@@ -1,4 +1,4 @@
-import robotic as ry
+from robotic import ry
 import numpy as np
 from config import setup_config, startup_robot
 from visual import getObject, lookAtObj, scanObject, point2pointPCR
@@ -10,7 +10,7 @@ INITIAL_OBJ_POS = [-.5, 0, .69]
 DEBUG = False
 OBJ_HEIGHT = .08
 
-ON_REAL = False
+ON_REAL = True
 
 robot_pos = np.array([-.54, -.17, .651])
 
@@ -34,7 +34,7 @@ if __name__ == "__main__":
     obj_pos = INITIAL_OBJ_POS
 
     # Generate Arena
-    arena = CircularArena(middleP=robot_pos, innerR=None, outerR=.3)
+    arena = CircularArena(middleP=robot_pos, innerR=None, outerR=.5)
     arena.plotArena(C)
 
     # Point towards set initial object position
@@ -43,7 +43,7 @@ if __name__ == "__main__":
     # Capture midpoint from point cloud
     obj_pos  = getObject(bot, C, arena) 
 
-    scanned_views = scanObject(bot, C, np.array(obj_pos), arena, save_as="./data/scanned_views.json")
+    scanned_views = scanObject(bot, C, np.array(obj_pos), arena, save_as="./data/scanned_views.json", view_count=8)
 
     for i, point_cloud in enumerate(scanned_views):
 
@@ -77,6 +77,8 @@ if __name__ == "__main__":
     bot.hold()
     bot.home(C)
 
-    #C.view(True)
+    C.view(True)
     del bot
     del C
+    exit()
+    

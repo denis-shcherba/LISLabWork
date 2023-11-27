@@ -40,7 +40,7 @@ def getFilteredPointCloud(bot, ry_config, arena, z_cutoff=.68):
     objectpoints=[]
     colors = []
     for i, p in enumerate(points):
-        if p[2] > z_cutoff and arena.point_in_arena(np.array(p)):
+        if p[2] > (z_cutoff) and arena.point_in_arena(np.array(p)):
             objectpoints.append(p)
             colors.append(rgb[i])
     return objectpoints, colors
@@ -193,11 +193,11 @@ def plotLine(ry_config, start, end, resolution=10):
         else:
             frame.setPosition(position)
 
-def scanObject(bot, ry_config, obj_pos, arena, gripper_height=.2, gripper_distance=.2, save_as=None):
+def scanObject(bot, ry_config, obj_pos, arena, gripper_height=.2, gripper_distance=.2, save_as=None, view_count=16):
 
     all_points = []
-    angle_step = 2*np.pi/8
-    for i in range(8):
+    angle_step = 2*np.pi/view_count
+    for i in range(view_count):
         angle = angle_step * i
         new_view = np.array([
             gripper_distance * np.sin(angle),
@@ -227,7 +227,6 @@ def scanObject(bot, ry_config, obj_pos, arena, gripper_height=.2, gripper_distan
         points, _ = getFilteredPointCloud(bot, ry_config, arena)
         all_points.append([list(p) for p in points])
         getObject(bot, ry_config, arena)
-        ry_config.view(True)
 
     if save_as:
         json.dump(all_points, open(save_as, "w"))
@@ -269,23 +268,30 @@ def voxelGridDownsampling(original_pc, voxel_space_dimensions=[10, 10, 10]):
 
     return sampled_pc
 
-def point2pointPCR(pcd_files, visualize=False):
-    
-    # Load the first point cloud as the initial reference
-    merged_cloud = o3d.io.read_point_cloud("data/"+pcd_files[0])
 
-    # Iterate through the remaining point clouds and align/merge
+def point2pointPCR(pcd_files, visualize=False):
+
+    # Load the first point cloud as the initial reference
+    merged_cloud = o3d.io.read_point_cloud("data/" + pcd_files[0])
+
+    # Define the initial transformation matrix as an identity matrix
+    init_transformation = np.identity(4)
+
     for pcd_file in pcd_files[1:]:
         # Load the next point cloud
-        cloud_to_align = o3d.io.read_point_cloud("data/"+pcd_file)
+        cloud_to_align = o3d.io.read_point_cloud("data/" + pcd_file)
 
         # Perform ICP registration
         icp_result = o3d.pipelines.registration.registration_icp(
-            cloud_to_align, merged_cloud, 0.1, np.identity(4), o3d.pipelines.registration.TransformationEstimationPointToPoint())
+            cloud_to_align, merged_cloud, .1, init_transformation,
+            o3d.pipelines.registration.TransformationEstimationPointToPoint(False),
+            o3d.pipelines.registration.ICPConvergenceCriteria(1e-6, 1e-6, 30)
+        )
 
         # Apply the transformation to align the point cloud with the reference
         cloud_to_align.transform(icp_result.transformation)
         print("Transformation:", icp_result.transformation)
+
         # Combine the aligned point cloud with the merged point cloud
         merged_cloud += cloud_to_align
 
@@ -294,9 +300,8 @@ def point2pointPCR(pcd_files, visualize=False):
 
     # Load the PCD file
     point_cloud = o3d.io.read_point_cloud("merged_point_cloud.pcd")
-    # Convert the point cloud data to a NumPy array
-    points = np.asarray(point_cloud.points)
 
+    points = np.asarray(point_cloud.points)
     if visualize:
         # Extract the X, Y, and Z coordinates
         x = points[:, 0]
@@ -313,3 +318,43 @@ def point2pointPCR(pcd_files, visualize=False):
 
     return points
 
+def standardICP(source, target):
+    threshold = 0.02
+    iterations = 10
+    trans_init = np.asarray([
+                            [1., 0., 0., 0.],
+                            [0., 1., 0., 0.],
+                            [0., 0., 1., 0.],
+                            [0., 0., 0., 1.]])
+    source, _ = source.remove_statistical_outlier(nb_neighbors=20, std_ratio=2.0)
+    target, _ = target.remove_statistical_outlier(nb_neighbors=20, std_ratio=2.0)
+    source = source.voxel_down_sample(voxel_size=0.001)
+    target = target.voxel_down_sample(voxel_size=0.001)
+    for _ in range(iterations):
+        reg_p2p = o3d.pipelines.registration.registration_icp(
+                source, target, threshold, trans_init,
+                o3d.pipelines.registration.TransformationEstimationPointToPoint())
+        source.transform(reg_p2p.transformation)
+    source += target
+    source = source.voxel_down_sample(voxel_size=0.001)
+    return source
+
+def piece_pci(pcs):
+    while len(pcs) > 1:
+        print("Starting loop...")
+        # Piece Creation
+        new_pcs = []
+        for i in range(0, len(pcs), 2):
+            new_pcs.append(standardICP(pcs[i], pcs[i-1]))
+            new_pcs.append(standardICP(pcs[i], pcs[i+1]))
+
+        pcs = new_pcs
+
+        # Piece Joining
+        new_pcs = []
+        for i in range(0, len(pcs), 2):
+            new_pcs.append(standardICP(pcs[i], pcs[i+1]))
+
+        pcs = new_pcs
+        print("Ending loop...")
+    return pcs[0]
