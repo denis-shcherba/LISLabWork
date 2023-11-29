@@ -2,9 +2,12 @@ import numpy as np
 import open3d as o3d
 
 pcd = o3d.io.read_point_cloud("./data/pcs/controller/pieceWisePC.pcd")
-pcd = pcd.voxel_down_sample(voxel_size=0.005)
+pcd = pcd.voxel_down_sample(voxel_size=.005)
+pcd, _ = pcd.remove_statistical_outlier(nb_neighbors=20, std_ratio=2.0)
 pcd.estimate_normals(
-    search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=0.1, max_nn=30))
+    search_param=o3d.geometry.KDTreeSearchParamHybrid(radius=.025, max_nn=20))
+
+#o3d.visualization.draw_geometries([pcd], point_show_normal=True)
 
 GRIPPER_FINGER_SEPARATION = .075
 GRIPPER_FINGER_WIDTH = .025
@@ -23,7 +26,8 @@ GRIPPER_FINGER_WIDTH = .025
         threshhold like the gripper finger separation. (Temporarly also set a minimum
         distance for this value)
 
-        - Normals should be looking away from eachother.
+        - Normals should be looking away from eachother. (Temporarly until better
+        normal extraction we will also consider normals pointing in the same direction)
 
         - The two chosen grasping points should be contained in an surface with points
         with the same normal.
@@ -81,7 +85,7 @@ def inPatches(pcd_points, pcd_normals, pIndex, equal_normal_thresh=.7, planar_di
 
     return patch_points
 
-def calculate_valid_antipodal_pairs(pcd_points, pcd_normals, min_patch_points=15, equal_normal_thresh=.7, verbose=0):
+def calculate_valid_antipodal_pairs(pcd_points, pcd_normals, min_patch_points=15, equal_normal_thresh=.9, verbose=0):
 
     # Find points in patches
     points_in_patches = []
@@ -109,7 +113,7 @@ def calculate_valid_antipodal_pairs(pcd_points, pcd_normals, min_patch_points=15
             normal_j = np.asarray(pcd_normals[p2])
             dot_product = np.dot(normal_i, normal_j)
 
-            if (dot_product < -equal_normal_thresh and
+            if ((dot_product < -equal_normal_thresh or dot_product > equal_normal_thresh) and
                 validSideDistance(pcd_points[p1], pcd_points[p2], pcd_normals[p1]) and
                 validNormalDistance(pcd_points[p1], pcd_points[p2], pcd_normals[p1]) and
                 validNormalRelativeDir(pcd_points[p1], pcd_points[p2], pcd_normals[p1])
