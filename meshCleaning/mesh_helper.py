@@ -22,9 +22,11 @@ class MeshHelper():
         self.failed = False
         self.inertiaIsDiagonal = False
         self.load(file)
+        
 
     def load(self, file):
         print('=== file: ', file)
+        self.mesh = trimesh.load(file, force='mesh')
         self.filebase = os.path.splitext(file)[0]
         try:
             scene_or_mesh = trimesh.load(file, force='mesh')
@@ -134,6 +136,8 @@ class MeshHelper():
             fil.write(f'obj_points (obj): {{ mesh_points: <{self.filebase}.h5>, color: [1 1 0], size: [2.] }}\n')
 
 
+
+
     def createPoints(self):
         self.pts, faces = trimesh.sample.sample_surface(self.mesh, 20000)
         self.normals = self.mesh.face_normals[faces]
@@ -141,7 +145,27 @@ class MeshHelper():
         #normals = trimesh.unitize((self.mesh.vertex_normals[self.mesh.faces[faces]] *
         #                          trimesh.unitize(bary).reshape((-1, 3, 1))).sum(axis=1))
     
+
     def createDecomposition(self):
+
+        convex_hulls = self.mesh.convex_decomposition()
+        
+        self.decomp_parts = [0]
+        self.decomp_vertices = np.asarray(convex_hulls[0].vertices)
+        self.decomp_faces = np.asarray(convex_hulls[0].faces)
+        vert_len = len(convex_hulls[0].vertices) 
+        for i, part in enumerate(convex_hulls[1:]):                
+
+            self.decomp_vertices = np.concatenate([self.decomp_vertices, part.vertices]) 
+            self.decomp_faces = np.concatenate([self.decomp_faces, part.faces + vert_len])  
+            self.decomp_parts.append(len(part.vertices)+self.decomp_parts[i])
+
+            vert_len+=len(part.vertices)
+        
+        self.decomp_parts = np.asarray(self.decomp_parts)
+        self.decomp_colors = [0,0,255]  # fixed blue for now
+
+    def createDecomposition_lowlevel(self):
         ### create decomposition
         ret = os.system('ry-meshTool.sh ' + self.filebase+'.mesh' + ' -decomp -hide -quiet'
                         ' && mv z.arr ' + self.filebase+'.decomp' )
@@ -168,7 +192,12 @@ class MeshHelper():
                 fil.create_dataset('mesh/faces', data=self.mesh.faces, dtype='uint16')
             else:
                 fil.create_dataset('mesh/faces', data=self.mesh.faces, dtype='uint32')
-            #fil.create_dataset('colors', data=self.mesh.vertices, dtype='float16')
+            colors = np.asarray(self.mesh.visual.vertex_colors)[:,0:3]
+            print("type:", type(colors))
+            print("dtype:", colors.dtype)
+            print("max:", np.max(colors))
+            print("min:", np.min(colors))
+            fil.create_dataset('mesh/colors', data=colors, dtype='uint8')
             fil.create_dataset('points/vertices', data=self.pts, dtype='float32')
             fil.create_dataset('points/normals', data=self.normals, dtype='float32')
             fil.create_dataset('decomp/vertices', data=self.decomp_vertices, dtype='float32')
