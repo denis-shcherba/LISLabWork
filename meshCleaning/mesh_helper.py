@@ -134,6 +134,7 @@ class MeshHelper():
                 fil.write(f'obj: {{ X:[0., 0., 1.], mass: {self.mesh.center_mass.tolist()}, inertia: {self.mesh.moment_inertia.reshape([9]).tolist()} }}\n')
             fil.write(f'obj_mesh (obj): {{ mesh: <{self.filebase}.h5>, color: [1 0 0 .5] }}\n')
             fil.write(f'obj_points (obj): {{ mesh_points: <{self.filebase}.h5>, color: [1 1 0], size: [2.] }}\n')
+            return self.filebase+'.g'
 
 
 
@@ -193,10 +194,10 @@ class MeshHelper():
             else:
                 fil.create_dataset('mesh/faces', data=self.mesh.faces, dtype='uint32')
             colors = np.asarray(self.mesh.visual.vertex_colors)[:,0:3]
-            print("type:", type(colors))
-            print("dtype:", colors.dtype)
-            print("max:", np.max(colors))
-            print("min:", np.min(colors))
+            # print("type:", type(colors))
+            # print("dtype:", colors.dtype)
+            # print("max:", np.max(colors))
+            # print("min:", np.min(colors))
             fil.create_dataset('mesh/colors', data=colors, dtype='uint8')
             fil.create_dataset('points/vertices', data=self.pts, dtype='float32')
             fil.create_dataset('points/normals', data=self.normals, dtype='float32')
