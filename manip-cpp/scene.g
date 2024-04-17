@@ -1,4 +1,4 @@
-Include: <../../rai-robotModels/scenarios/pandaSingle.g>
+Include: </home/eckart/rai-robotModels/scenarios/pandaSingle.g>
 
 box(table): { joint: rigid, Q:[-.0,.25,.08], shape: ssBox, size: [.15,.06,.06,.005], contact: 1, mass: .1 }
 

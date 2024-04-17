@@ -151,7 +151,7 @@ void testPush(){
 
 void testPivot(){
   rai::Configuration C;
-  C.addFile(rai::raiPath("../rai-robotModels/scenarios/pandaSingle.g"));
+  C.addFile("/home/eckart/rai-robotModels/scenarios/pandaSingle.g");
   C.delSubtree("cameraWrist");
 
   C.addFrame("hinge", "table") ->setJoint(rai::JT_rigid) .setRelativePosition({.3, .2, .15});
@@ -229,8 +229,8 @@ int main(int argc,char** argv){
 
   //rnd.clockSeed();
 
-  testPickAndPlace();
-  testPush();
+  //testPickAndPlace();
+  //testPush();
   testPivot();
 
   return 0;
